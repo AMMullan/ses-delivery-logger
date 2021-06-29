@@ -1,5 +1,7 @@
 resource "aws_sns_topic" "notification_handler" {
   name = "SESNotificationHandler"
+
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "notification_handler_lambda" {
