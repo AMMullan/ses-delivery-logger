@@ -1,11 +1,3 @@
-variable "account_id" {
-  description = "AWS Account ID"
-}
-
-variable "region" {
-  description = "AWS Region where handler is provisioned"
-}
-
 variable "iam_role_prefix" {
   description = "Lambda IAM Execution Role Prefix - Will have var.region appended to it"
   default     = "SESNotificationHandler"
@@ -29,4 +21,9 @@ variable "cloudwatch_logs_group_name" {
 variable "cloudwatch_logs_retention" {
   description = "How many days to retain CloudWatch Logs"
   default     = 180
+}
+
+variable "point_in_time_recovery_enabled" {
+  description = "Enable Point-In-Time Recovery for DynamoDB"
+  default     = false
 }
