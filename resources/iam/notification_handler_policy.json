@@ -1,0 +1,23 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "arn:aws:dynamodb:${region}:${account_id}:table/${dynamodb_table}"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogStream",
+            "Resource": "arn:aws:logs:${region}:${account_id}:log-group:${cloudwatch_logs_group_name}"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "logs:PutLogEvents",
+            "Resource": "arn:aws:logs:${region}:${account_id}:log-group:${cloudwatch_logs_group_name}:log-stream:*"
+        }
+    ]
+}
