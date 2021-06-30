@@ -1,3 +1,8 @@
+variable "resource_tags" {
+  description = "Tags to apply to all resources"
+  default     = {}
+}
+
 variable "iam_role_prefix" {
   description = "Lambda IAM Execution Role Prefix - Will have var.region appended to it"
   default     = "SESNotificationHandler"
@@ -14,7 +19,7 @@ variable "ddb_tbl_name" {
 }
 
 variable "cloudwatch_logs_group_name" {
-  description = "Log Group Name for CloudWatch Logs"
+  description = "Log Group Name for CloudWatch Logs - Will have var.region appended to it"
   default     = "/aws/lambda/SESNotificationHandler"
 }
 

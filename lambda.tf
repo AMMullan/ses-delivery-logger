@@ -4,7 +4,7 @@ resource "aws_lambda_function" "notification_handler" {
 
   runtime = "python3.8"
 
-  filename         = "resources/lambda/notification_handler.zip"
+  filename         = "${path.module}/resources/lambda/notification_handler.zip"
   source_code_hash = filebase64sha256("${path.module}/resources/lambda/notification_handler.zip")
   handler          = "notification_handler.lambda_handler"
 
@@ -13,4 +13,6 @@ resource "aws_lambda_function" "notification_handler" {
       DYNAMODB_TABLE = var.ddb_tbl_name
     }
   }
+
+  tags = var.resource_tags
 }
