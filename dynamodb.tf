@@ -1,3 +1,4 @@
+#tfsec:ignore:AWS092
 resource "aws_dynamodb_table" "notification_handler" {
   name = var.ddb_tbl_name
 
@@ -23,8 +24,7 @@ resource "aws_dynamodb_table" "notification_handler" {
   }
 
   server_side_encryption {
-    enabled     = true
-    kms_key_arn = aws_kms_key.notification_handler.arn
+    enabled = false
   }
 
   tags = var.resource_tags
