@@ -39,8 +39,23 @@ No requirements
 ## Outputs
 
 | Name | Description |
-|------|-------------|-
+|------|-------------|
 | sns\_topic\_arn | SNS Topic ARN |
+
+## Note
+You can also use default tags to tag all resources in your Terraform project, i.e.
+````hcl
+provider "aws" {
+  region = "eu-west-1"
+
+   default_tags {
+     tags = {
+       Name        = "Provider Tag"
+       Environment = "Test"
+     }
+   }
+}
+```
 
 ## TODO
 
