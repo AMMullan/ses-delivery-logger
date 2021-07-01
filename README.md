@@ -21,7 +21,7 @@ No requirements
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+|------|-------------|------|---------|----------|
 | resource\_tags | Tags to apply to all resources | `map(any)` | {} | no |
 | iam\_role\_prefix | Lambda IAM Execution Role Prefix - Will have region name appended to it | `string` | SESNotificationHandler | no |
 | lambda\_name | Lambda Function Name | `string` | SESNotificationHandler | no |
