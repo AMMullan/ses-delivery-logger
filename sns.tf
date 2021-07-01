@@ -1,7 +1,14 @@
+#tfsec:ignore:AWS016
 resource "aws_sns_topic" "notification_handler" {
-  name = "SESNotificationHandler"
-
-  kms_master_key_id = aws_kms_key.notification_handler.key_id
+  name = var.sns_topic_name
+  policy = templatefile(
+    "${path.module}/resources/sns/access_policy.json",
+    {
+      account_id = data.aws_caller_identity.current.account_id,
+      region     = data.aws_region.current.name,
+      topic_name = var.sns_topic_name
+    }
+  )
 
   tags = var.resource_tags
 }
