@@ -16,3 +16,11 @@ resource "aws_lambda_function" "notification_handler" {
 
   tags = var.resource_tags
 }
+
+resource "aws_lambda_permission" "with_sns" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.notification_handler.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.notification_handler.arn
+}
