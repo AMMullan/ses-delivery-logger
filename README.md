@@ -44,7 +44,7 @@ No requirements
 
 ## Note
 You can also use default tags to tag all resources in your Terraform project, i.e.
-````hcl
+```hcl
 provider "aws" {
   region = "eu-west-1"
 
