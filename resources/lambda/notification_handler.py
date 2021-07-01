@@ -47,25 +47,18 @@ def lambda_handler(event, context):
         ddb_item['FeedbackType'] = complaint_detail.get('complaintFeedbackType')
 
     elif is_delivery:
-        addresses = [message['mail']['destination']]
+        addresses = message['mail']['destination']
 
     else:
         logger.critical(f'Unknown message type: {notification_type} - Message Content: {json.dumps(message)}')
         raise Exception(f'Invalid message type received: {notification_type}')
 
-    dynamodb = boto3.client("dynamodb")
+    dynamodb = boto3.resource("dynamodb")
+    handler_table = dynamodb.Table(DYNAMODB_TABLE)
+
     for address in addresses:
         if is_bounce:
             bounce_type = ddb_item.get('BounceType')
-            logger.info(f"Message {message_id} bounced when sending to {address}. Bounce type: {bounce_type}")
-        elif is_complaint:
-            logger.info(f"A complaint was reported by {address} for message {message_id}.")
-        elif is_delivery:
-            logger.info(f"Message {message_id} was delivered successfully at {publish_time}")
 
         ddb_item['UserId'] = address
-
-        dynamodb.put_item(
-            TableName=DYNAMODB_TABLE,
-            Item=ddb_item
-        )
+        handler_table.put_item(Item=ddb_item)
