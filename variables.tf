@@ -32,15 +32,8 @@ variable "ddb_tbl_name" {
   default = "SESNotificationHandler"
 }
 
-variable "cloudwatch_logs_group_name" {
-  description = "Log Group Name for CloudWatch Logs"
-
-  type    = string
-  default = "/aws/lambda/SESNotificationHandler"
-}
-
-variable "cloudwatch_logs_retention" {
-  description = "How many days to retain CloudWatch Logs"
+variable "logs_retention" {
+  description = "CloudWatch Logs Retention (Days)"
 
   type    = number
   default = 180

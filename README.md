@@ -27,8 +27,7 @@ No requirements
 | lambda\_name | Lambda Function Name | `string` | SESNotificationHandler | no |
 | sns\_topic\_name | SNS Topic Name | `string` | SESNotificationHandler | no |
 | ddb\_tbl\_name | DynamoDB Table Name | `string` | SESNotificationHandler | no |
-| cloudwatch\_logs\_group\_name | Log Group Name for CloudWatch Logs | `string` | /aws/lambda/SESNotificationHandler | no |
-| cloudwatch\_logs\_retention | How many days to retain CloudWatch Logs | `number` | 180 | no |
+| logs\_retention | CloudWatch Logs Retention (Days) | `number` | 180 | no |
 | point\_in\_time\_recovery\_enabled | Enable Point-In-Time Recovery for DynamoDB | `bool` | false | no |
 
 ## TODO

@@ -12,7 +12,7 @@ resource "aws_iam_role" "notification_handler" {
         account_id                 = data.aws_caller_identity.current.account_id,
         region                     = data.aws_region.current.name,
         dynamodb_table             = var.ddb_tbl_name,
-        cloudwatch_logs_group_name = var.cloudwatch_logs_group_name
+        cloudwatch_logs_group_name = "/aws/lambda/${var.lambda_name}"
       }
     )
   }
