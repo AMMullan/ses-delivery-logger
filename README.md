@@ -2,6 +2,12 @@
 
 This Terraform module creates a DynamoDB database to enable you to track SES notifications in order for you to track bounces/complaints and ensure you don't get blacklisted by AWS.
 
+## Process Flow
+1. SES is configured to use the SNS Topic created (the only manual part of this)
+2. SNS sends the message to Lambda
+3. Lambda captures information from the SES message and inserts it into DynamoDB
+
+## Usage
 ```hcl
 module "ses_handler" {
   source  = "github.com/AMMullan/ses-notification-handler"
@@ -29,6 +35,12 @@ No requirements
 | ddb\_tbl\_name | DynamoDB Table Name | `string` | SESNotificationHandler | no |
 | logs\_retention | CloudWatch Logs Retention (Days) | `number` | 180 | no |
 | point\_in\_time\_recovery\_enabled | Enable Point-In-Time Recovery for DynamoDB | `bool` | false | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|-
+| sns\_topic\_arn | SNS Topic ARN |
 
 ## TODO
 
