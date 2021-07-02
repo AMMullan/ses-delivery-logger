@@ -25,11 +25,45 @@ variable "sns_topic_name" {
   type    = string
   default = "SESNotificationHandler"
 }
+
 variable "ddb_tbl_name" {
   description = "DynamoDB Table Name"
 
   type    = string
   default = "SESNotificationHandler"
+}
+
+variable "ddb_billing_mode" {
+  description = "Capacity Billing - Provisioned or Pay-Per-Request"
+
+  type    = string
+  default = "PAY_PER_REQUEST"
+
+  validation {
+    condition     = contains(["PAY_PER_REQUEST", "PROVISIONED"], var.ddb_billing_mode)
+    error_message = "Valid values for var: ddb_billing_mode are (PAY_PER_REQUEST, PROVISIONED)."
+  }
+}
+
+variable "ddb_provisioned_read" {
+  description = "DynamoDB Provisioned Read Capacity Units"
+
+  type    = number
+  default = 0
+}
+
+variable "ddb_provisioned_write" {
+  description = "DynamoDB Provisioned Write Capacity Units"
+
+  type    = number
+  default = 0
+}
+
+variable "ddb_encrypted" {
+  description = "Enable DynamoDB Encryption"
+
+  type    = bool
+  default = true
 }
 
 variable "logs_retention" {
@@ -41,13 +75,6 @@ variable "logs_retention" {
 
 variable "point_in_time_recovery_enabled" {
   description = "Enable Point-In-Time Recovery for DynamoDB"
-
-  type    = bool
-  default = false
-}
-
-variable "retain_dynamodb_on_destroy" {
-  description = "Keep DynamoDB Table if destroying the Terraform"
 
   type    = bool
   default = false
