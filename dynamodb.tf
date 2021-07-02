@@ -2,9 +2,9 @@
 resource "aws_dynamodb_table" "notification_handler" {
   name = var.ddb_tbl_name
 
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 5
-  write_capacity = 5
+  billing_mode   = var.ddb_billing_mode
+  read_capacity  = var.ddb_provisioned_read
+  write_capacity = var.ddb_provisioned_write
 
   hash_key  = "UserId"
   range_key = "PublishTime"
@@ -24,11 +24,11 @@ resource "aws_dynamodb_table" "notification_handler" {
   }
 
   server_side_encryption {
-    enabled = false
+    enabled = var.ddb_encrypted
   }
 
   lifecycle {
-    prevent_destroy = var.retain_dynamodb_on_destroy
+    prevent_destroy = true
   }
 
   tags = var.resource_tags
