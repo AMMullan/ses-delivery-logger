@@ -45,3 +45,10 @@ variable "point_in_time_recovery_enabled" {
   type    = bool
   default = false
 }
+
+variable "retain_dynamodb_on_destroy" {
+  description = "Keep DynamoDB Table if destroying the Terraform"
+
+  type    = bool
+  default = false
+}

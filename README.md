@@ -35,6 +35,7 @@ No requirements
 | ddb\_tbl\_name | DynamoDB Table Name | `string` | SESNotificationHandler | no |
 | logs\_retention | CloudWatch Logs Retention (Days) | `number` | 180 | no |
 | point\_in\_time\_recovery\_enabled | Enable Point-In-Time Recovery for DynamoDB | `bool` | false | no |
+| retain\_dynamodb\_on\_destroy | Keep DynamoDB Table if destroying the Terraform | `bool` | false | no |
 
 ## Outputs
 

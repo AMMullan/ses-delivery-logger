@@ -27,5 +27,9 @@ resource "aws_dynamodb_table" "notification_handler" {
     enabled = false
   }
 
+  lifecycle {
+    prevent_destroy = var.retain_dynamodb_on_destroy
+  }
+
   tags = var.resource_tags
 }
