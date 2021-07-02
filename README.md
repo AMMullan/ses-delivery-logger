@@ -40,7 +40,7 @@ No requirements
 | logs\_retention | CloudWatch Logs Retention (Days) | `number` | 180 | no |
 | point\_in\_time\_recovery\_enabled | Enable Point-In-Time Recovery for DynamoDB | `bool` | false | no |
 
-> If **ddb_billing_mode** is configured with PROVISIONED, then **ddb_provisioned_read** and **ddb_provisioned_read** <ins>must be</ins> greater than 0
+> If **ddb_billing_mode** is configured with PROVISIONED, then **ddb_provisioned_read** and **ddb_provisioned_write** must be greater than 0 or you will logically get an error.
 
 ## Outputs
 
