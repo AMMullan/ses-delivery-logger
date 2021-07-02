@@ -27,6 +27,15 @@ module "ses_handler" {
 |------|---------|
 | aws | >= 3.1.5 |
 
+## Resources
+* aws_cloudwatch_log_group.notification_handler_lambda
+* aws_dynamodb_table.notification_handler
+* aws_iam_role.notification_handler
+* aws_lambda_function.notification_handler
+* aws_lambda_permission.with_sns
+* aws_sns_topic.notification_handler
+* aws_sns_topic_subscription.notification_handler_lambda
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -50,6 +59,7 @@ module "ses_handler" {
 | Name | Description |
 |------|-------------|
 | sns\_topic\_arn | SNS Topic ARN |
+| dynamodb\_table\_arn | SNS Topic ARN |
 
 ## Notes
 You can also use default tags to tag all resources in your Terraform project, i.e.
