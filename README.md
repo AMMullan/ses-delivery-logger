@@ -33,9 +33,12 @@ No requirements
 | lambda\_name | Lambda Function Name | `string` | SESNotificationHandler | no |
 | sns\_topic\_name | SNS Topic Name | `string` | SESNotificationHandler | no |
 | ddb\_tbl\_name | DynamoDB Table Name | `string` | SESNotificationHandler | no |
+| ddb\_encrypted | Enable DynamoDB Table Encryption | `bool` | true | no |
+| ddb\_billing\_mode | Capacity Billing - PAY_PER_REQUEST or PROVISIONED | `string` | PAY_PER_REQUEST | no |
+| ddb\_provisioned\_read | DynamoDB Provisioned Read Capacity Units | `number` | 0 | no |
+| ddb\_provisioned\_write | DynamoDB Provisioned Write Capacity Units | `number` | 0 | no |
 | logs\_retention | CloudWatch Logs Retention (Days) | `number` | 180 | no |
 | point\_in\_time\_recovery\_enabled | Enable Point-In-Time Recovery for DynamoDB | `bool` | false | no |
-| retain\_dynamodb\_on\_destroy | Keep DynamoDB Table if destroying the Terraform | `bool` | false | no |
 
 ## Outputs
 
@@ -43,7 +46,7 @@ No requirements
 |------|-------------|
 | sns\_topic\_arn | SNS Topic ARN |
 
-## Note
+## Notes
 You can also use default tags to tag all resources in your Terraform project, i.e.
 ```hcl
 provider "aws" {
@@ -58,9 +61,9 @@ provider "aws" {
 }
 ```
 
-## TODO
+The DynamoDB Table is encrypted at rest by default using the AWS Managed KMS Key.
 
-* Allow KMS
+The Table is also configured to **NOT** be destroyed if the module is removed so you will need to ensure that this table is removed manually should you wish.
 
 ## License
 
