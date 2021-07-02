@@ -40,6 +40,8 @@ No requirements
 | logs\_retention | CloudWatch Logs Retention (Days) | `number` | 180 | no |
 | point\_in\_time\_recovery\_enabled | Enable Point-In-Time Recovery for DynamoDB | `bool` | false | no |
 
+> If **ddb_billing_mode** is configured with PROVISIONED, then **ddb_provisioned_read** and **ddb_provisioned_read** <ins>must be</ins> greater than 0
+
 ## Outputs
 
 | Name | Description |
@@ -60,10 +62,9 @@ provider "aws" {
    }
 }
 ```
-
-The DynamoDB Table is encrypted at rest by default using the AWS Managed KMS Key.
-
-The Table is also configured to **NOT** be destroyed if the module is removed so you will need to ensure that this table is removed manually should you wish.
+DynamoDB:
+ * Table is encrypted at rest by default using the AWS Managed KMS Key.
+ * The Table will **NOT** be destroyed if the module is removed so you will need to ensure that this table is removed manually should you wish.
 
 ## License
 
