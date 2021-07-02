@@ -16,13 +16,16 @@ module "ses_handler" {
 
 ## Requirements
 
-No requirements
+| Name | Version |
+|------|---------|
+| terraform | >= 0.12.26 |
+| aws | >= 3.1.5 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | n/a |
+| aws | >= 3.1.5 |
 
 ## Inputs
 
