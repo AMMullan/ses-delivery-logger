@@ -12,7 +12,11 @@ DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
 
 def lambda_handler(event, context):
     message = json.loads(event['Records'][0]['Sns']['Message'])
-    message_id = message['mail']['messageId']
+
+    # Ignore any event that doesn't have valid mail items.
+    if 'mail' not in message:
+        return
+
     publish_time = event['Records'][0]['Sns']['Timestamp']
 
     notification_type = message.get('notificationType')
@@ -57,8 +61,5 @@ def lambda_handler(event, context):
     handler_table = dynamodb.Table(DYNAMODB_TABLE)
 
     for address in addresses:
-        if is_bounce:
-            bounce_type = ddb_item.get('BounceType')
-
         ddb_item['UserId'] = address
         handler_table.put_item(Item=ddb_item)
