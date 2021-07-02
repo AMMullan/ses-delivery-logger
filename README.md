@@ -1,6 +1,6 @@
-# Terraform Module for handling SES Notifications
+# Terraform Module for shipping SES Notifications to DynamoDB
 
-This Terraform module creates a DynamoDB database to enable you to track SES notifications in order for you to track bounces/complaints and ensure you don't get blacklisted by AWS.
+This Terraform module enables you to send SES notifications to a DynamoDB table (via SNS) to enable you to track, and manage, any bounces/complaints or audit delivery.
 
 ## Process Flow
 1. SES is configured to use the SNS Topic created (the only manual part of this)
