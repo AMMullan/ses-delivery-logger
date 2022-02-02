@@ -33,7 +33,7 @@ resource "aws_dynamodb_table" "notification_handler" {
   }
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   tags = var.resource_tags
