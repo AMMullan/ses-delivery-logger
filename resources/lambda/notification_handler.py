@@ -6,6 +6,8 @@ import datetime
 
 import boto3
 
+logging.getLogger("boto3").setLevel(logging.WARNING)
+logging.getLogger("botocore").setLevel(logging.WARNING)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -40,7 +42,7 @@ def lambda_handler(event, context):
     # Record the subject if the Headers are included
     eml_subject = message.get('mail').get('commonHeaders').get('subject')
     if eml_subject:
-        ddb_item['Subject'] = eml_subject
+        ddb_item['Subject'] = {'S': eml_subject}
 
     if notification_type == 'Bounce':
         bounce_detail = message.get('bounce')
