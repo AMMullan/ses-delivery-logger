@@ -35,6 +35,7 @@ def lambda_handler(event, context):
     notification_type = message.get(type_key)
 
     ddb_item = {
+        'MessageId': {'S': message.get('mail').get('messageId')},
         "MessageTime": {'S': message_time},
         "NotificationType": {'S': notification_type}
     }
