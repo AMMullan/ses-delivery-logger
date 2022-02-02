@@ -6,16 +6,16 @@ resource "aws_dynamodb_table" "notification_handler" {
   read_capacity  = var.ddb_provisioned_read
   write_capacity = var.ddb_provisioned_write
 
-  hash_key  = "UserId"
-  range_key = "PublishTime"
+  hash_key  = "MessageId"
+  range_key = "MessageTime"
 
   attribute {
-    name = "UserId"
+    name = "MessageId"
     type = "S"
   }
 
   attribute {
-    name = "PublishTime"
+    name = "MessageTime"
     type = "S"
   }
 
