@@ -105,7 +105,7 @@ def lambda_handler(event, context):
 
     else:
         logger.critical(f'Unknown message type: {notification_type} - Message Content: {json.dumps(message)}')
-        raise Exception(f'Invalid message type received: {notification_type}')
+        return
 
     dynamodb = boto3.client("dynamodb")
 
