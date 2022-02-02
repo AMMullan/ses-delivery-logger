@@ -33,6 +33,20 @@ variable "ddb_tbl_name" {
   default = "SESNotificationHandler"
 }
 
+variable "ddb_enable_ttl" {
+  description = "Enable TTL on DynamoDB Records"
+
+  type    = bool
+  default = true
+}
+
+variable "ddb_ttl_days" {
+  description = "Number of days to retain record"
+
+  type    = number
+  default = 30
+}
+
 variable "ddb_billing_mode" {
   description = "Capacity Billing - Provisioned or Pay-Per-Request"
 

@@ -11,6 +11,7 @@ resource "aws_lambda_function" "notification_handler" {
   environment {
     variables = {
       DYNAMODB_TABLE = var.ddb_tbl_name
+      DYNAMODB_TTL = var.ddb_ttl_days
     }
   }
 
