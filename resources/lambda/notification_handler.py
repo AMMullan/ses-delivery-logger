@@ -112,7 +112,7 @@ def lambda_handler(event, context):
     # Add TTL Attribute
     current_epoch = datetime.datetime.fromtimestamp(int(time.time()))
     ttl_epoch = int((current_epoch + datetime.timedelta(days=30)).timestamp())
-    ddb_item['RecordTTL'] = {'N': ttl_epoch}
+    ddb_item['RecordTTL'] = {'N': str(ttl_epoch)}
 
     dynamodb.put_item(
         TableName=DYNAMODB_TABLE,
