@@ -19,11 +19,6 @@ resource "aws_dynamodb_table" "notification_handler" {
     type = "S"
   }
 
-  attribute {
-    name = "RecordTTL"
-    type = "N"
-  }
-
   ttl {
     attribute_name = "RecordTTL"
     enabled        = var.ddb_enable_ttl
