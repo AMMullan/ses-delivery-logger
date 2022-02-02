@@ -1,6 +1,8 @@
 import os
 import logging
 import json
+import time
+import datetime
 
 import boto3
 
@@ -8,58 +10,109 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
+TTL_DAYS = os.environ.get('DYNAMODB_TTL', 30)
+
+# TODO:
+#   - Work out best way of NOT duplicating messages to DynamoDB if
+#     Feedback Notifications and Configuration Set are both sending to me...
 
 
 def lambda_handler(event, context):
-    message = json.loads(event['Records'][0]['Sns']['Message'])
+    try:
+        message = json.loads(event['Records'][0]['Sns']['Message'])
+    except json.JSONDecodeError:  # Not valid JSON, likely an SNS message.
+        return
 
     # Ignore any event that doesn't have valid mail items.
     if 'mail' not in message:
         return
 
-    publish_time = event['Records'][0]['Sns']['Timestamp']
+    message_time = message.get('mail').get('timestamp')
 
-    notification_type = message.get('notificationType')
+    type_key = 'eventType' if 'eventType' in message.keys() else 'notificationType'
+    notification_type = message.get(type_key)
 
     ddb_item = {
-        "PublishTime": publish_time,
-        "NotificationType": notification_type
+        "MessageTime": {'S': message_time},
+        "NotificationType": {'S': notification_type}
     }
 
-    is_bounce = notification_type == 'Bounce'
-    is_complaint = notification_type == 'Complaint'
-    is_delivery = notification_type == 'Delivery'
+    # Record the subject if the Headers are included
+    eml_subject = message.get('mail').get('commonHeaders').get('subject')
+    if eml_subject:
+        ddb_item['Subject'] = eml_subject
 
-    if is_bounce:
+    if notification_type == 'Bounce':
         bounce_detail = message.get('bounce')
 
-        addresses = [
-            recipient['emailAddress']
-            for recipient in bounce_detail.get('bouncedRecipients')
-        ]
-        ddb_item['BounceType'] = bounce_detail.get('bounceType')
-        ddb_item['BounceSubType'] = bounce_detail.get('bounceSubType')
+        ddb_item['Recipients'] = {'SS': bounce_detail.get('bouncedRecipients')}
+        ddb_item['ReportingMTA'] = {'S': bounce_detail.get('reportingMTA')}
+        ddb_item['BounceType'] = {'S': bounce_detail.get('bounceType')}
+        ddb_item['BounceSubType'] = {'S': bounce_detail.get('bounceSubType')}
+        ddb_item['Timestamp'] = {'S': bounce_detail.get('timestamp')}
 
-    elif is_complaint:
+    elif notification_type == 'Complaint':
         complaint_detail = message.get('complaint')
-        addresses = [
-            recipient['emailAddress']
-            for recipient in complaint_detail.get('complainedRecipients')
-        ]
 
-        ddb_item['FeedbackId'] = complaint_detail.get('feedbackId')
-        ddb_item['FeedbackType'] = complaint_detail.get('complaintFeedbackType')
+        ddb_item['Recipients'] = {'SS': complaint_detail.get('complainedRecipients')}
+        ddb_item['UserAgent'] = {'S': complaint_detail.get('userAgent')}
+        ddb_item['FeedbackId'] = {'S': complaint_detail.get('feedbackId')}
+        ddb_item['FeedbackType'] = {'S': complaint_detail.get('complaintFeedbackType')}
+        ddb_item['Timestamp'] = {'S': complaint_detail.get('arrivalDate')}
 
-    elif is_delivery:
-        addresses = message['mail']['destination']
+    elif notification_type == 'Delivery':
+        delivery_detail = message.get('delivery')
+
+        ddb_item['Recipients'] = {'SS': delivery_detail.get('recipients')}
+        ddb_item['ReportingMTA'] = {'S': delivery_detail.get('reportingMTA')}
+        ddb_item['SMTPResponse'] = {'S': delivery_detail.get('smtpResponse')}
+        ddb_item['Timestamp'] = {'S': delivery_detail.get('timestamp')}
+
+    elif notification_type == 'DeliveryDelay':
+        delay_detail = message.get('deliveryDelay')
+
+        ddb_item['Recipients'] = {'S': delay_detail.get('delayedRecipients')}
+        ddb_item['ExpirationTime'] = delivery_detail.get('expirationTime')
+        ddb_item['DelayType'] = delivery_detail.get('delayType')
+        ddb_item['Timestamp'] = delivery_detail.get('timestamp')
+
+    elif notification_type == 'Reject':
+        ddb_item['Reason'] = message.get('reject').reason()
+
+    elif notification_type == 'Click':
+        click_detail = message.get('click')
+
+        ddb_item['IPAddress'] = click_detail.get('ipAddress')
+        ddb_item['Link'] = click_detail.get('link')
+        ddb_item['LinkTags'] = click_detail.get('linkTags')
+        ddb_item['UserAgent'] = click_detail.get('userAgent')
+        ddb_item['Timestamp'] = click_detail.get('timestamp')
+
+    elif notification_type == 'Open':
+        open_detail = message.get('open')
+
+        ddb_item['IPAddress'] = open_detail.get('ipAddress')
+        ddb_item['UserAgent'] = open_detail.get('userAgent')
+        ddb_item['Timestamp'] = open_detail.get('timestamp')
+
+    elif notification_type == 'Rendering Failure':
+        failure_detail = message.get('failure')
+
+        ddb_item['ErrorMessage'] = failure_detail.get('errorMessage')
+        ddb_item['TemplateName'] = failure_detail.get('templateName')
 
     else:
         logger.critical(f'Unknown message type: {notification_type} - Message Content: {json.dumps(message)}')
         raise Exception(f'Invalid message type received: {notification_type}')
 
-    dynamodb = boto3.resource("dynamodb")
-    handler_table = dynamodb.Table(DYNAMODB_TABLE)
+    dynamodb = boto3.client("dynamodb")
 
-    for address in addresses:
-        ddb_item['UserId'] = address
-        handler_table.put_item(Item=ddb_item)
+    # Add TTL Attribute
+    current_epoch = datetime.datetime.fromtimestamp(int(time.time()))
+    ttl_epoch = int((current_epoch + datetime.timedelta(days=30)).timestamp())
+    ddb_item['RecordTTL'] = {'N': ttl_epoch}
+
+    dynamodb.put_item(
+        TableName=DYNAMODB_TABLE,
+        Item=ddb_item
+    )
