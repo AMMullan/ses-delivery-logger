@@ -1,5 +1,5 @@
 #tfsec:ignore:AWS016
-resource "aws_sns_topic" "notification_handler" {
+resource "aws_sns_topic" "delivery_logger" {
   name = var.sns_topic_name
   policy = templatefile(
     "${path.module}/resources/sns/access_policy.json",
@@ -13,8 +13,8 @@ resource "aws_sns_topic" "notification_handler" {
   tags = var.resource_tags
 }
 
-resource "aws_sns_topic_subscription" "notification_handler_lambda" {
-  topic_arn = aws_sns_topic.notification_handler.arn
+resource "aws_sns_topic_subscription" "delivery_logger_lambda" {
+  topic_arn = aws_sns_topic.delivery_logger.arn
   protocol  = "lambda"
-  endpoint  = aws_lambda_function.notification_handler.arn
+  endpoint  = aws_lambda_function.delivery_logger.arn
 }

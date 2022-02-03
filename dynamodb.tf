@@ -1,5 +1,5 @@
 #tfsec:ignore:AWS092
-resource "aws_dynamodb_table" "notification_handler" {
+resource "aws_dynamodb_table" "delivery_logger" {
   name = var.ddb_tbl_name
 
   billing_mode   = var.ddb_billing_mode

@@ -9,28 +9,28 @@ variable "iam_role_prefix" {
   description = "Lambda IAM Execution Role Prefix - Will have var.region appended to it"
 
   type    = string
-  default = "SESNotificationHandler"
+  default = "SESDeliveryLogger"
 }
 
 variable "lambda_name" {
   description = "Lambda Function Name"
 
   type    = string
-  default = "SESNotificationHandler"
+  default = "SESDeliveryLogger"
 }
 
 variable "sns_topic_name" {
   description = "SNS Topic Name"
 
   type    = string
-  default = "SESNotificationHandler"
+  default = "SESDeliveryLogger"
 }
 
 variable "ddb_tbl_name" {
   description = "DynamoDB Table Name"
 
   type    = string
-  default = "SESNotificationHandler"
+  default = "SESDeliveryLogger"
 }
 
 variable "ddb_enable_ttl" {

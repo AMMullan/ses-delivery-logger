@@ -1,16 +1,16 @@
-# Terraform Module for shipping SES Notifications to DynamoDB
+# Terraform Module for shipping SES Delivery Events to DynamoDB
 
-This Terraform module enables you to send SES notifications to a DynamoDB table (via SNS) to enable you to track, and manage, any bounces/complaints or audit delivery.
+This Terraform module enables you to send SES Delivery Events to a DynamoDB table (via SNS) to enable you to track, and manage, any bounces/complaints or audit delivery.
 
 ## Process Flow
-1. SES is configured to use the SNS Topic created (the only manual part of this)
+1. SES is configured to use the SNS Topic created (currently the only manual part of this)
 2. SNS sends the message to Lambda
 3. Lambda captures information from the SES message and inserts it into DynamoDB
 
 ## Usage
 ```hcl
-module "ses_handler" {
-  source  = "github.com/AMMullan/ses-notification-handler"
+module "ses_logger" {
+  source  = "github.com/AMMullan/ses-delivery-logger"
 }
 ```
 
@@ -28,23 +28,25 @@ module "ses_handler" {
 | aws | >= 3.1.5 |
 
 ## Resources
-* aws_cloudwatch_log_group.notification_handler_lambda
-* aws_dynamodb_table.notification_handler
-* aws_iam_role.notification_handler
-* aws_lambda_function.notification_handler
+* aws_iam_role.delivery_logger
+* aws_cloudwatch_log_group.delivery_logger_lambda
+* aws_dynamodb_table.delivery_logger
+* aws_lambda_function.delivery_logger
 * aws_lambda_permission.with_sns
-* aws_sns_topic.notification_handler
-* aws_sns_topic_subscription.notification_handler_lambda
+* aws_sns_topic.delivery_logger
+* aws_sns_topic_subscription.delivery_logger_lambda
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | resource\_tags | Tags to apply to all resources | `map(any)` | {} | no |
-| iam\_role\_prefix | Lambda IAM Execution Role Prefix - Will have region name appended to it | `string` | SESNotificationHandler | no |
-| lambda\_name | Lambda Function Name | `string` | SESNotificationHandler | no |
-| sns\_topic\_name | SNS Topic Name | `string` | SESNotificationHandler | no |
-| ddb\_tbl\_name | DynamoDB Table Name | `string` | SESNotificationHandler | no |
+| iam\_role\_prefix | Lambda IAM Execution Role Prefix - Will have region name appended to it | `string` | SESDeliveryLogger | no |
+| lambda\_name | Lambda Function Name | `string` | SESDeliveryLogger | no |
+| sns\_topic\_name | SNS Topic Name | `string` | SESDeliveryLogger | no |
+| ddb\_tbl\_name | DynamoDB Table Name | `string` | SESDeliveryLogger | no |
+| ddb\_enable\_ttl | Enable TTL on DDB Table | `bool` | true | no |
+| ddb\_ttl\_days | Days To Retain DDB Records | `number` | 30 | no |
 | ddb\_encrypted | Enable DynamoDB Table Encryption | `bool` | true | no |
 | ddb\_billing\_mode | Capacity Billing - PAY_PER_REQUEST or PROVISIONED | `string` | PAY_PER_REQUEST | no |
 | ddb\_provisioned\_read | DynamoDB Provisioned Read Capacity Units | `number` | 0 | no |
