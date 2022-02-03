@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     if 'mail' not in message:
         return
 
-    message_time = message.get('mail').get('timestamp')
+    message_time = event['Records'][0]['Sns']['Timestamp']
 
     type_key = 'eventType' if 'eventType' in message.keys() else 'notificationType'
     event_type = message.get(type_key)
@@ -46,10 +46,13 @@ def lambda_handler(event, context):
     if eml_subject:
         ddb_item['Subject'] = {'S': eml_subject}
 
+    destination_address = message.get('mail').get('destination')
+
     if event_type == 'Bounce':
         bounce_detail = message.get('bounce')
 
-        ddb_item['Recipients'] = {'SS': bounce_detail.get('bouncedRecipients')}
+        ddb_item['BounceSummary'] = {'S': json.dumps(bounce_detail.get('bouncedRecipients'))}
+        ddb_item['DestinationAddress'] = destination_address
         ddb_item['ReportingMTA'] = {'S': bounce_detail.get('reportingMTA')}
         ddb_item['BounceType'] = {'S': bounce_detail.get('bounceType')}
         ddb_item['BounceSubType'] = {'S': bounce_detail.get('bounceSubType')}
@@ -58,8 +61,7 @@ def lambda_handler(event, context):
     elif event_type == 'Complaint':
         complaint_detail = message.get('complaint')
 
-        ddb_item['Recipients'] = {'SS': complaint_detail.get('complainedRecipients')}
-        ddb_item['UserAgent'] = {'S': complaint_detail.get('userAgent')}
+        ddb_item['DestinationAddress'] = destination_address
         ddb_item['FeedbackId'] = {'S': complaint_detail.get('feedbackId')}
         ddb_item['FeedbackType'] = {'S': complaint_detail.get('complaintFeedbackType')}
         ddb_item['Timestamp'] = {'S': complaint_detail.get('arrivalDate')}
@@ -67,15 +69,13 @@ def lambda_handler(event, context):
     elif event_type == 'Delivery':
         delivery_detail = message.get('delivery')
 
-        ddb_item['Recipients'] = {'SS': delivery_detail.get('recipients')}
+        ddb_item['DestinationAddress'] = destination_address
         ddb_item['ReportingMTA'] = {'S': delivery_detail.get('reportingMTA')}
         ddb_item['SMTPResponse'] = {'S': delivery_detail.get('smtpResponse')}
         ddb_item['Timestamp'] = {'S': delivery_detail.get('timestamp')}
 
     elif event_type == 'DeliveryDelay':
-        delay_detail = message.get('deliveryDelay')
-
-        ddb_item['Recipients'] = {'S': delay_detail.get('delayedRecipients')}
+        ddb_item['DestinationAddress'] = destination_address
         ddb_item['ExpirationTime'] = delivery_detail.get('expirationTime')
         ddb_item['DelayType'] = delivery_detail.get('delayType')
         ddb_item['Timestamp'] = delivery_detail.get('timestamp')
