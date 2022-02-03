@@ -61,6 +61,7 @@ def lambda_handler(event, context):
     elif event_type == 'Complaint':
         complaint_detail = message.get('complaint')
 
+        ddb_item['ComplaintSummary'] = {'S': json.dumps(complaint_detail.get('complainedRecipients'))}
         ddb_item['DestinationAddress'] = {'S': destination_address}
         ddb_item['FeedbackId'] = {'S': complaint_detail.get('feedbackId')}
         ddb_item['FeedbackType'] = {'S': complaint_detail.get('complaintFeedbackType')}
@@ -69,7 +70,7 @@ def lambda_handler(event, context):
     elif event_type == 'Delivery':
         delivery_detail = message.get('delivery')
 
-        ddb_item['DestinationAddress'] = {'S': destination_address}
+        ddb_item['DestinationAddress'] = {'S': str(delivery_detail.get('recipients'))}
         ddb_item['ReportingMTA'] = {'S': delivery_detail.get('reportingMTA')}
         ddb_item['SMTPResponse'] = {'S': delivery_detail.get('smtpResponse')}
         ddb_item['Timestamp'] = {'S': delivery_detail.get('timestamp')}
