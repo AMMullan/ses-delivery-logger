@@ -46,7 +46,7 @@ def lambda_handler(event, context):
     if eml_subject:
         ddb_item['Subject'] = {'S': eml_subject}
 
-    destination_address = message.get('mail').get('destination')
+    destination_address = str(message.get('mail').get('destination'))
 
     if event_type == 'Bounce':
         bounce_detail = message.get('bounce')
