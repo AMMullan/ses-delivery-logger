@@ -3,6 +3,7 @@ import logging
 import json
 import time
 import datetime
+from collections import OrderedDict
 
 import boto3
 
@@ -34,11 +35,11 @@ def lambda_handler(event, context):
     type_key = 'eventType' if 'eventType' in message.keys() else 'notificationType'
     event_type = message.get(type_key)
 
-    ddb_item = {
-        'MessageId': {'S': message.get('mail').get('messageId')},
-        "MessageTime": {'S': message_time},
-        "EventType": {'S': event_type}
-    }
+    ddb_item = OrderedDict()
+
+    ddb_item['MessageId'] = {'S': message.get('mail').get('messageId')}
+    ddb_item["MessageTime"] = {'S': message_time}
+    ddb_item["EventType"] = {'S': event_type}
 
     # Record the subject if the Headers are included
     eml_subject = message.get('mail').get('commonHeaders').get('subject')
@@ -105,7 +106,7 @@ def lambda_handler(event, context):
         ddb_item['TemplateName'] = failure_detail.get('templateName')
 
     else:
-        logger.critical(f'Unknown message type: {event_type} - Message Content: {json.dumps(message)}')
+        logger.critical(f'Unhandled Message Type: {event_type} - Message Content: {json.dumps(message)}')
         return
 
     dynamodb = boto3.client("dynamodb")
