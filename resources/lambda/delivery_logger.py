@@ -52,7 +52,7 @@ def lambda_handler(event, context):
         bounce_detail = message.get('bounce')
 
         ddb_item['BounceSummary'] = {'S': json.dumps(bounce_detail.get('bouncedRecipients'))}
-        ddb_item['DestinationAddress'] = destination_address
+        ddb_item['DestinationAddress'] = {'S': destination_address}
         ddb_item['ReportingMTA'] = {'S': bounce_detail.get('reportingMTA')}
         ddb_item['BounceType'] = {'S': bounce_detail.get('bounceType')}
         ddb_item['BounceSubType'] = {'S': bounce_detail.get('bounceSubType')}
@@ -61,7 +61,7 @@ def lambda_handler(event, context):
     elif event_type == 'Complaint':
         complaint_detail = message.get('complaint')
 
-        ddb_item['DestinationAddress'] = destination_address
+        ddb_item['DestinationAddress'] = {'S': destination_address}
         ddb_item['FeedbackId'] = {'S': complaint_detail.get('feedbackId')}
         ddb_item['FeedbackType'] = {'S': complaint_detail.get('complaintFeedbackType')}
         ddb_item['Timestamp'] = {'S': complaint_detail.get('arrivalDate')}
@@ -69,41 +69,41 @@ def lambda_handler(event, context):
     elif event_type == 'Delivery':
         delivery_detail = message.get('delivery')
 
-        ddb_item['DestinationAddress'] = destination_address
+        ddb_item['DestinationAddress'] = {'S': destination_address}
         ddb_item['ReportingMTA'] = {'S': delivery_detail.get('reportingMTA')}
         ddb_item['SMTPResponse'] = {'S': delivery_detail.get('smtpResponse')}
         ddb_item['Timestamp'] = {'S': delivery_detail.get('timestamp')}
 
     elif event_type == 'DeliveryDelay':
-        ddb_item['DestinationAddress'] = destination_address
-        ddb_item['ExpirationTime'] = delivery_detail.get('expirationTime')
-        ddb_item['DelayType'] = delivery_detail.get('delayType')
-        ddb_item['Timestamp'] = delivery_detail.get('timestamp')
+        ddb_item['DestinationAddress'] = {'S': destination_address}
+        ddb_item['ExpirationTime'] = {'S': delivery_detail.get('expirationTime')}
+        ddb_item['DelayType'] = {'S': delivery_detail.get('delayType')}
+        ddb_item['Timestamp'] = {'S': delivery_detail.get('timestamp')}
 
     elif event_type == 'Reject':
-        ddb_item['Reason'] = message.get('reject').reason()
+        ddb_item['Reason'] = {'S': message.get('reject').reason()}
 
     elif event_type == 'Click':
         click_detail = message.get('click')
 
-        ddb_item['IPAddress'] = click_detail.get('ipAddress')
-        ddb_item['Link'] = click_detail.get('link')
-        ddb_item['LinkTags'] = click_detail.get('linkTags')
-        ddb_item['UserAgent'] = click_detail.get('userAgent')
-        ddb_item['Timestamp'] = click_detail.get('timestamp')
+        ddb_item['IPAddress'] = {'S': click_detail.get('ipAddress')}
+        ddb_item['Link'] = {'S': click_detail.get('link')}
+        ddb_item['LinkTags'] = {'S': click_detail.get('linkTags')}
+        ddb_item['UserAgent'] = {'S': click_detail.get('userAgent')}
+        ddb_item['Timestamp'] = {'S': click_detail.get('timestamp')}
 
     elif event_type == 'Open':
         open_detail = message.get('open')
 
-        ddb_item['IPAddress'] = open_detail.get('ipAddress')
-        ddb_item['UserAgent'] = open_detail.get('userAgent')
-        ddb_item['Timestamp'] = open_detail.get('timestamp')
+        ddb_item['IPAddress'] = {'S': open_detail.get('ipAddress')}
+        ddb_item['UserAgent'] = {'S': open_detail.get('userAgent')}
+        ddb_item['Timestamp'] = {'S': open_detail.get('timestamp')}
 
     elif event_type == 'Rendering Failure':
         failure_detail = message.get('failure')
 
-        ddb_item['ErrorMessage'] = failure_detail.get('errorMessage')
-        ddb_item['TemplateName'] = failure_detail.get('templateName')
+        ddb_item['ErrorMessage'] = {'S': failure_detail.get('errorMessage')}
+        ddb_item['TemplateName'] = {'S': failure_detail.get('templateName')}
 
     else:
         logger.critical(f'Unhandled Message Type: {event_type} - Message Content: {json.dumps(message)}')
