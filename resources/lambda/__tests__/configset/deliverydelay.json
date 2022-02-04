@@ -1,0 +1,40 @@
+{
+  "Records":[
+     {
+        "EventSource":"aws:sns",
+        "EventVersion":"1.0",
+        "EventSubscriptionArn":"arn:aws:sns:us-east-1:{{{accountId}}}:ExampleTopic",
+        "Sns":{
+           "eventType":"DeliveryDelay",
+           "mail":{
+              "timestamp":"2020-06-16T00:15:40.641Z",
+              "source":"sender@example.com",
+              "sourceArn":"arn:aws:ses:us-east-1:123456789012:identity/sender@example.com",
+              "sendingAccountId":"123456789012",
+              "messageId":"00000137860315fd-34208509-5b74-41f3-95c5-41f3-41f3",
+              "destination":[
+                 "recipient@example.com"
+              ],
+              "headersTruncated":false,
+              "tags":{
+                 "ses:configuration-set":[
+                    "ConfigSet"
+                 ]
+              }
+           },
+           "deliveryDelay":{
+              "timestamp":"2020-06-16T00:25:40.095Z",
+              "delayType":"TransientCommunicationFailure",
+              "expirationTime":"2020-06-16T00:25:40.914Z",
+              "delayedRecipients":[
+                 {
+                    "emailAddress":"recipient@example.com",
+                    "status":"4.4.1",
+                    "diagnosticCode":"smtp; 421 4.4.1 Unable to connect to remote host"
+                 }
+              ]
+           }
+        }
+     }
+  ]
+}

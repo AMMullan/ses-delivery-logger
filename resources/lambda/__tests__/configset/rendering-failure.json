@@ -1,0 +1,32 @@
+{
+  "Records":[
+     {
+        "EventSource":"aws:sns",
+        "EventVersion":"1.0",
+        "EventSubscriptionArn":"arn:aws:sns:us-east-1:{{{accountId}}}:ExampleTopic",
+        "Sns":{
+           "eventType":"Rendering Failure",
+           "mail":{
+              "timestamp":"2018-01-22T18:43:06.197Z",
+              "source":"sender@example.com",
+              "sourceArn":"arn:aws:ses:us-east-1:123456789012:identity/sender@example.com",
+              "sendingAccountId":"123456789012",
+              "messageId":"00000137860315fd-34208509-5b74-41f3-95c5-41f3-41f3",
+              "destination":[
+                 "recipient@example.com"
+              ],
+              "headersTruncated":false,
+              "tags":{
+                 "ses:configuration-set":[
+                    "ConfigSet"
+                 ]
+              }
+           },
+           "failure":{
+              "errorMessage":"Attribute 'attributeName' is not present in the rendering data.",
+              "templateName":"MyTemplate"
+           }
+        }
+     }
+  ]
+}
