@@ -44,7 +44,7 @@ def lambda_handler(event, context):
     # Record the subject if the Headers are included
     eml_subject = message.get('mail').get('commonHeaders').get('subject')
     if eml_subject:
-        ddb_item['Subject'] = {'SS': eml_subject}
+        ddb_item['Subject'] = {'S': eml_subject}
 
     destination_address = str(message.get('mail').get('destination'))
 
