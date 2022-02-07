@@ -52,6 +52,9 @@ def lambda_handler(event, context):
     if config_set:
         ddb_item['ConfigSet'] = {'S': next(iter(config_set or []), None)}
 
+    from_address = message.get('mail').get('source')
+    ddb_item['FromAddress'] = {'S': from_address}
+
     if event_type == 'Bounce':
         bounce_detail = message.get('bounce')
 
