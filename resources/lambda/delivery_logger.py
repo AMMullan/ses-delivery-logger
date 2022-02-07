@@ -44,13 +44,13 @@ def lambda_handler(event, context):
     # Record the subject if the Headers are included
     eml_subject = message.get('mail').get('commonHeaders').get('subject')
     if eml_subject:
-        ddb_item['Subject'] = {'S': eml_subject}
+        ddb_item['Subject'] = {'SS': eml_subject}
 
     destination_address = str(message.get('mail').get('destination'))
 
     config_set = message.get('mail').get('tags', {}).get('ses:configuration-set')
     if config_set:
-        ddb_item['ConfigSet'] = {'S': config_set}
+        ddb_item['ConfigSet'] = {'S': next(iter(config_set or []), None)}
 
     if event_type == 'Bounce':
         bounce_detail = message.get('bounce')
