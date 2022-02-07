@@ -48,6 +48,10 @@ def lambda_handler(event, context):
 
     destination_address = str(message.get('mail').get('destination'))
 
+    config_set = message.get('mail').get('tags', {}).get('ses:configuration-set')
+    if config_set:
+        ddb_item['ConfigSet'] = {'S': config_set}
+
     if event_type == 'Bounce':
         bounce_detail = message.get('bounce')
 
