@@ -63,7 +63,7 @@ def lambda_handler(event, context):
         ddb_item['ReportingMTA'] = {'S': bounce_detail.get('reportingMTA')}
         ddb_item['BounceType'] = {'S': bounce_detail.get('bounceType')}
         ddb_item['BounceSubType'] = {'S': bounce_detail.get('bounceSubType')}
-        ddb_item['Timestamp'] = {'S': bounce_detail.get('timestamp')}
+        ddb_item['MessageTime'] = {'S': bounce_detail.get('timestamp')}
 
     elif event_type == 'Complaint':
         complaint_detail = message.get('complaint')
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
         ddb_item['DestinationAddress'] = {'S': destination_address}
         ddb_item['FeedbackId'] = {'S': complaint_detail.get('feedbackId')}
         ddb_item['FeedbackType'] = {'S': complaint_detail.get('complaintFeedbackType')}
-        ddb_item['Timestamp'] = {'S': complaint_detail.get('arrivalDate')}
+        ddb_item['MessageTime'] = {'S': complaint_detail.get('arrivalDate')}
 
     elif event_type == 'Delivery':
         delivery_detail = message.get('delivery')
@@ -80,13 +80,13 @@ def lambda_handler(event, context):
         ddb_item['DestinationAddress'] = {'S': str(delivery_detail.get('recipients'))}
         ddb_item['ReportingMTA'] = {'S': delivery_detail.get('reportingMTA')}
         ddb_item['SMTPResponse'] = {'S': delivery_detail.get('smtpResponse')}
-        ddb_item['Timestamp'] = {'S': delivery_detail.get('timestamp')}
+        ddb_item['MessageTime'] = {'S': delivery_detail.get('timestamp')}
 
     elif event_type == 'DeliveryDelay':
         ddb_item['DestinationAddress'] = {'S': destination_address}
         ddb_item['ExpirationTime'] = {'S': delivery_detail.get('expirationTime')}
         ddb_item['DelayType'] = {'S': delivery_detail.get('delayType')}
-        ddb_item['Timestamp'] = {'S': delivery_detail.get('timestamp')}
+        ddb_item['MessageTime'] = {'S': delivery_detail.get('timestamp')}
 
     elif event_type == 'Reject':
         ddb_item['Reason'] = {'S': message.get('reject').reason()}
@@ -98,14 +98,14 @@ def lambda_handler(event, context):
         ddb_item['Link'] = {'S': click_detail.get('link')}
         ddb_item['LinkTags'] = {'S': click_detail.get('linkTags')}
         ddb_item['UserAgent'] = {'S': click_detail.get('userAgent')}
-        ddb_item['Timestamp'] = {'S': click_detail.get('timestamp')}
+        ddb_item['MessageTime'] = {'S': click_detail.get('timestamp')}
 
     elif event_type == 'Open':
         open_detail = message.get('open')
 
         ddb_item['IPAddress'] = {'S': open_detail.get('ipAddress')}
         ddb_item['UserAgent'] = {'S': open_detail.get('userAgent')}
-        ddb_item['Timestamp'] = {'S': open_detail.get('timestamp')}
+        ddb_item['MessageTime'] = {'S': open_detail.get('timestamp')}
 
     elif event_type == 'Rendering Failure':
         failure_detail = message.get('failure')
