@@ -60,7 +60,7 @@ def lambda_handler(event, context):
 
         ddb_item['BounceSummary'] = {'S': json.dumps(bounce_detail.get('bouncedRecipients'))}
         ddb_item['DestinationAddress'] = {'S': destination_address}
-        ddb_item['ReportingMTA'] = {'S': bounce_detail.get('reportingMTA')}
+        ddb_item['ReportingMTA'] = {'S': bounce_detail.get('reportingMTA', '')}
         ddb_item['BounceType'] = {'S': bounce_detail.get('bounceType')}
         ddb_item['BounceSubType'] = {'S': bounce_detail.get('bounceSubType')}
         ddb_item['MessageTime'] = {'S': bounce_detail.get('timestamp')}
@@ -78,15 +78,17 @@ def lambda_handler(event, context):
         delivery_detail = message.get('delivery')
 
         ddb_item['DestinationAddress'] = {'S': str(delivery_detail.get('recipients'))}
-        ddb_item['ReportingMTA'] = {'S': delivery_detail.get('reportingMTA')}
+        ddb_item['ReportingMTA'] = {'S': delivery_detail.get('reportingMTA', '')}
         ddb_item['SMTPResponse'] = {'S': delivery_detail.get('smtpResponse')}
         ddb_item['MessageTime'] = {'S': delivery_detail.get('timestamp')}
 
     elif event_type == 'DeliveryDelay':
+        delay_detail = message.get('deliveryDelay')
+
         ddb_item['DestinationAddress'] = {'S': destination_address}
-        ddb_item['ExpirationTime'] = {'S': delivery_detail.get('expirationTime')}
-        ddb_item['DelayType'] = {'S': delivery_detail.get('delayType')}
-        ddb_item['MessageTime'] = {'S': delivery_detail.get('timestamp')}
+        ddb_item['ExpirationTime'] = {'S': delay_detail.get('expirationTime')}
+        ddb_item['DelayType'] = {'S': delay_detail.get('delayType')}
+        ddb_item['MessageTime'] = {'S': delay_detail.get('timestamp')}
 
     elif event_type == 'Reject':
         ddb_item['Reason'] = {'S': message.get('reject').reason()}
