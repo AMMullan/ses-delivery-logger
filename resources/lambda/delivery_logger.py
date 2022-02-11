@@ -85,7 +85,7 @@ def lambda_handler(event, context):
     elif event_type == 'DeliveryDelay':
         delay_detail = message.get('deliveryDelay')
 
-        ddb_item['DestinationAddress'] = {'S': destination_address}
+        ddb_item['DelayedRecipients'] = {'S': str(delay_detail.get('delayedRecipients'))}
         ddb_item['ExpirationTime'] = {'S': delay_detail.get('expirationTime')}
         ddb_item['DelayType'] = {'S': delay_detail.get('delayType')}
         ddb_item['MessageTime'] = {'S': delay_detail.get('timestamp')}
