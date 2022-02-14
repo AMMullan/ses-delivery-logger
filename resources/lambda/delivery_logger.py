@@ -52,6 +52,10 @@ def lambda_handler(event, context):
     if config_set:
         ddb_item['ConfigSet'] = {'S': next(iter(config_set or []), None)}
 
+    iam_user = message.get('mail').get('tags', {}).get('ses:caller-identity')
+    if iam_user:
+        ddb_item['IAMUser'] = {'S': next(iter(iam_user or []), None)}
+
     from_address = message.get('mail').get('source')
     ddb_item['FromAddress'] = {'S': from_address}
 
