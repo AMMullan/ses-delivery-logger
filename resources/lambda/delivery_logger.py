@@ -46,7 +46,8 @@ def lambda_handler(event, context):
     if eml_subject:
         ddb_item['Subject'] = {'S': eml_subject}
 
-    destination_address = message.get('mail').get('destination')
+    # Get unique destinations
+    destination_address = list(set(message.get('mail').get('destination')))
 
     config_set = message.get('mail').get('tags', {}).get('ses:configuration-set')
     if config_set:
