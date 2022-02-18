@@ -308,7 +308,8 @@ def lambda_handler(event, context):
             err_msg = json.dumps({
                 "errorType": exception_type.__name__,
                 "errorMessage": str(exception_value),
-                "stackTrace": traceback_string
+                "stackTrace": traceback_string,
+                "log_event_args": log_event_args
             })
             logger.warning(err_msg)
             return
