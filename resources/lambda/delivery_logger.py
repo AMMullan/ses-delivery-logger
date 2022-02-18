@@ -18,7 +18,7 @@ DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
 TTL_DAYS = os.environ.get('DYNAMODB_TTL', 30)
 
 LOGS_DESTINATION = os.environ.get('LOGS_DESTINATION')
-LOG_STREAM = datetime.datetime.today().strftime('%Y-%m-%d')
+DMY = datetime.datetime.today().strftime('%Y-%m-%d')
 
 # TODO:
 #   - Work out best way of NOT duplicating messages to DynamoDB if
@@ -59,7 +59,8 @@ def lambda_handler(event, context):
     ddb_item["MessageTime"] = {'S': message_time}
     ddb_item["EventType"] = {'S': event_type}
 
-    logs_item['MessageId'] = message.get('mail').get('messageId')
+    message_id = message.get('mail').get('messageId')
+    logs_item['MessageId'] = message_id
     logs_item["MessageTime"] = message_time
     logs_item["EventType"] = event_type
 
@@ -222,11 +223,14 @@ def lambda_handler(event, context):
 
     logs = boto3.client('logs')
 
+    # Using this log stream name to hopefully fix sequence issues
+    log_stream_name = f'{DMY}_{message_id}'
+
     try:
         # Create Log Stream
         logs.create_log_stream(
             logGroupName=LOGS_DESTINATION,
-            logStreamName=LOG_STREAM
+            logStreamName=log_stream_name
         )
     except logs.exceptions.ResourceAlreadyExistsException:
         # Doesn't matter if stream exists
@@ -249,7 +253,7 @@ def lambda_handler(event, context):
     # Build put_log_events arguments
     log_event_args = {
         'logGroupName': LOGS_DESTINATION,
-        'logStreamName': LOG_STREAM,
+        'logStreamName': log_stream_name,
         'logEvents': [
             {
                 'timestamp': int(round(time.time() * 1000)),
@@ -262,7 +266,7 @@ def lambda_handler(event, context):
     try:
         streams = logs.describe_log_streams(
             logGroupName=LOGS_DESTINATION,
-            logStreamNamePrefix=LOG_STREAM
+            logStreamNamePrefix=log_stream_name
         ).get('logStreams')
     except Exception:
         exception_type, exception_value, exception_traceback = sys.exc_info()
