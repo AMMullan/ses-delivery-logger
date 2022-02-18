@@ -18,7 +18,7 @@ DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
 TTL_DAYS = os.environ.get('DYNAMODB_TTL', 30)
 
 LOGS_DESTINATION = os.environ.get('LOGS_DESTINATION')
-DMY = datetime.datetime.today().strftime('%Y-%m-%d')
+DMY = datetime.datetime.today().strftime('%Y/%m/%d')
 
 # TODO:
 #   - Work out best way of NOT duplicating messages to DynamoDB if
@@ -224,7 +224,7 @@ def lambda_handler(event, context):
     logs = boto3.client('logs')
 
     # Using this log stream name to hopefully fix sequence issues
-    log_stream_name = f'{DMY}_{message_id}'
+    log_stream_name = f'{DMY}/{message_id}'
 
     try:
         # Create Log Stream
