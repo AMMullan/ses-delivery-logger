@@ -2,8 +2,9 @@ resource "aws_lambda_function" "delivery_logger" {
   function_name = var.lambda_name
   role          = aws_iam_role.delivery_logger.arn
 
-  runtime = "python3.8"
-  timeout = 8  # temporary, will kill this when we stop using DDB
+  runtime     = "python3.8"
+  memory_size = 160 # temporary, will kill this when we stop using DDB
+  timeout     = 8 # temporary, will kill this when we stop using DDB
 
   filename         = "${path.module}/resources/lambda/delivery_logger.zip"
   source_code_hash = filebase64sha256("${path.module}/resources/lambda/delivery_logger.zip")
@@ -11,8 +12,8 @@ resource "aws_lambda_function" "delivery_logger" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE = var.ddb_tbl_name
-      DYNAMODB_TTL = var.ddb_ttl_days
+      DYNAMODB_TABLE   = var.ddb_tbl_name
+      DYNAMODB_TTL     = var.ddb_ttl_days
       LOGS_DESTINATION = var.cloudwatch_logs_destination
     }
   }
