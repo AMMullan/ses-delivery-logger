@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
 TTL_DAYS = os.environ.get('DYNAMODB_TTL', 30)
 LOGS_DESTINATION = os.environ.get('LOGS_DESTINATION')
-LOG_STREAM = datetime.today().strftime('%Y-%m-%d')
+LOG_STREAM = datetime.datetime.today().strftime('%Y-%m-%d')
 
 # TODO:
 #   - Work out best way of NOT duplicating messages to DynamoDB if
