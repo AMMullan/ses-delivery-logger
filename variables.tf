@@ -33,6 +33,13 @@ variable "cloudwatch_logs_destination" {
   default = "SESDeliveryLogger"
 }
 
+variable "event_retention_days" {
+  description = "How many days to retain events stored in CloudWatch Logs"
+
+  type    = number
+  default = 30
+}
+
 variable "ddb_tbl_name" {
   description = "DynamoDB Table Name"
 

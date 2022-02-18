@@ -8,7 +8,7 @@ resource "aws_cloudwatch_log_group" "delivery_logger_lambda" {
 
 resource "aws_cloudwatch_log_group" "events_destination" {
   name              = var.cloudwatch_logs_destination
-  retention_in_days = var.logs_retention
+  retention_in_days = var.event_retention_days
 
   tags = var.resource_tags
 }
