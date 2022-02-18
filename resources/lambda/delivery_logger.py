@@ -291,4 +291,20 @@ def lambda_handler(event, context):
                 'sequenceToken': sequence_token
             })
 
-        logs.put_log_events(**log_event_args)
+        try:
+            logs.put_log_events(**log_event_args)
+        except logs.exceptions.InvalidSequenceTokenException:
+            exception_type, exception_value, exception_traceback = sys.exc_info()
+            traceback_string = traceback.format_exception(
+                exception_type,
+                exception_value,
+                exception_traceback
+            )
+            err_msg = json.dumps({
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+                "payload": logs_item
+            })
+            logger.error(err_msg)
+            return
