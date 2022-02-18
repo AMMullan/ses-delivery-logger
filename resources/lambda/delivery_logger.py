@@ -304,7 +304,8 @@ def lambda_handler(event, context):
                 "errorType": exception_type.__name__,
                 "errorMessage": str(exception_value),
                 "stackTrace": traceback_string,
-                "payload": logs_item
+                "payload": log_event_args
+
             })
             logger.error(err_msg)
             return
