@@ -12,6 +12,7 @@ resource "aws_lambda_function" "delivery_logger" {
     variables = {
       DYNAMODB_TABLE = var.ddb_tbl_name
       DYNAMODB_TTL = var.ddb_ttl_days
+      LOGS_DESTINATION = var.cloudwatch_logs_destination
     }
   }
 

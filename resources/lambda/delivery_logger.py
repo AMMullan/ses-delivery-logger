@@ -4,6 +4,8 @@ import json
 import time
 import datetime
 from collections import OrderedDict
+import sys
+import traceback
 
 import boto3
 
@@ -14,6 +16,8 @@ logger.setLevel(logging.INFO)
 
 DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
 TTL_DAYS = os.environ.get('DYNAMODB_TTL', 30)
+LOGS_DESTINATION = os.environ.get('LOGS_DESTINATION')
+LOG_STREAM = datetime.today().strftime('%Y-%m-%d')
 
 # TODO:
 #   - Work out best way of NOT duplicating messages to DynamoDB if
@@ -23,7 +27,19 @@ TTL_DAYS = os.environ.get('DYNAMODB_TTL', 30)
 def lambda_handler(event, context):
     try:
         message = json.loads(event['Records'][0]['Sns']['Message'])
-    except json.JSONDecodeError:  # Not valid JSON, likely an SNS message.
+    except Exception:  # Not valid JSON, likely an SNS message.
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type,
+            exception_value,
+            exception_traceback
+        )
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
         return
 
     # Ignore any event that doesn't have valid mail items.
@@ -134,7 +150,80 @@ def lambda_handler(event, context):
     ttl_epoch = int((current_epoch + datetime.timedelta(days=30)).timestamp())
     ddb_item['RecordTTL'] = {'N': str(ttl_epoch)}
 
-    dynamodb.put_item(
-        TableName=DYNAMODB_TABLE,
-        Item=ddb_item
-    )
+    try:
+        dynamodb.put_item(
+            TableName=DYNAMODB_TABLE,
+            Item=ddb_item
+        )
+    except Exception:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type,
+            exception_value,
+            exception_traceback
+        )
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
+
+    logs = boto3.client('logs')
+    # Get Upload Sequence Token
+    try:
+        streams = logs.describe_log_streams(
+            logGroupName=LOGS_DESTINATION,
+            logStreamNamePrefix=LOG_STREAM
+        ).get('logStreams')
+    except logs.exceptions.ResourceNotFoundException:
+        # Log Group Doesn't Exist
+        return
+    else:
+        sequence_token = next(
+            iter(
+                [
+                    sequence.get('uploadSequenceToken')
+                    for sequence in streams
+                ] or []
+            ), None
+        )
+
+        try:
+            logs.create_log_stream(
+                logGroupName=LOGS_DESTINATION,
+                logStreamName=LOG_STREAM
+            )
+        except logs.exceptions.ResourceAlreadyExistsException:
+            pass
+        except Exception:
+            exception_type, exception_value, exception_traceback = sys.exc_info()
+            traceback_string = traceback.format_exception(
+                exception_type,
+                exception_value,
+                exception_traceback
+            )
+            err_msg = json.dumps({
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string
+            })
+            logger.error(err_msg)
+            return
+
+        log_event_args = {
+            'logGroupName': LOGS_DESTINATION,
+            'logStreamName': LOG_STREAM,
+            'logEvents': [
+                {
+                    'timestamp': int(round(time.time() * 1000)),
+                    'message': json.dumps(ddb_item)
+                }
+            ]
+        }
+        if sequence_token:
+            log_event_args.update({
+                'sequenceToken': sequence_token
+            })
+
+        logs.put_log_events(**log_event_args)

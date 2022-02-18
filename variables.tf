@@ -26,6 +26,13 @@ variable "sns_topic_name" {
   default = "SESDeliveryLogger"
 }
 
+variable "cloudwatch_logs_destination" {
+  description = "Name of the CloudWatch Logs Group to send events to"
+
+  type    = string
+  default = "SESDeliveryLogger"
+}
+
 variable "ddb_tbl_name" {
   description = "DynamoDB Table Name"
 
