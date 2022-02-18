@@ -179,6 +179,21 @@ def lambda_handler(event, context):
     except logs.exceptions.ResourceNotFoundException:
         # Log Group Doesn't Exist
         return
+    except logs.exceptions.AccessDeniedException:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type,
+            exception_value,
+            exception_traceback
+        )
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.warning(err_msg)
+        return
+        return
     else:
         sequence_token = next(
             iter(
