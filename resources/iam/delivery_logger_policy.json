@@ -15,7 +15,10 @@
                 "logs:PutLogEvents",
                 "logs:CreateLogStream"
             ],
-            "Resource": "arn:aws:logs:${region}:${account_id}:log-group:${cloudwatch_logs_group_name}:log-stream:*"
+            "Resource": [
+                "arn:aws:logs:${region}:${account_id}:log-group:${cloudwatch_logs_group_name}:log-stream:*",
+                "arn:aws:logs:${region}:${account_id}:log-group:${cloudwatch_logs_destination}:log-stream:*"
+            ]
         }
     ]
 }
