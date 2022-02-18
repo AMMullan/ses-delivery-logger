@@ -16,6 +16,7 @@ logger.setLevel(logging.INFO)
 
 DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
 TTL_DAYS = os.environ.get('DYNAMODB_TTL', 30)
+
 LOGS_DESTINATION = os.environ.get('LOGS_DESTINATION')
 LOG_STREAM = datetime.datetime.today().strftime('%Y-%m-%d')
 
@@ -220,16 +221,50 @@ def lambda_handler(event, context):
         logger.error(err_msg)
 
     logs = boto3.client('logs')
+
+    try:
+        # Create Log Stream
+        logs.create_log_stream(
+            logGroupName=LOGS_DESTINATION,
+            logStreamName=LOG_STREAM
+        )
+    except logs.exceptions.ResourceAlreadyExistsException:
+        # Doesn't matter if stream exists
+        pass
+    except Exception:
+        exception_type, exception_value, exception_traceback = sys.exc_info()
+        traceback_string = traceback.format_exception(
+            exception_type,
+            exception_value,
+            exception_traceback
+        )
+        err_msg = json.dumps({
+            "errorType": exception_type.__name__,
+            "errorMessage": str(exception_value),
+            "stackTrace": traceback_string
+        })
+        logger.error(err_msg)
+        return
+
+    # Build put_log_events arguments
+    log_event_args = {
+        'logGroupName': LOGS_DESTINATION,
+        'logStreamName': LOG_STREAM,
+        'logEvents': [
+            {
+                'timestamp': int(round(time.time() * 1000)),
+                'message': json.dumps(logs_item)
+            }
+        ]
+    }
+
     # Get Upload Sequence Token
     try:
         streams = logs.describe_log_streams(
             logGroupName=LOGS_DESTINATION,
             logStreamNamePrefix=LOG_STREAM
         ).get('logStreams')
-    except logs.exceptions.ResourceNotFoundException:
-        # Log Group Doesn't Exist
-        return
-    except logs.exceptions.AccessDeniedException:
+    except Exception:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
             exception_type,
@@ -243,7 +278,6 @@ def lambda_handler(event, context):
         })
         logger.warning(err_msg)
         return
-        return
     else:
         sequence_token = next(
             iter(
@@ -254,38 +288,6 @@ def lambda_handler(event, context):
             ), None
         )
 
-        try:
-            logs.create_log_stream(
-                logGroupName=LOGS_DESTINATION,
-                logStreamName=LOG_STREAM
-            )
-        except logs.exceptions.ResourceAlreadyExistsException:
-            pass
-        except Exception:
-            exception_type, exception_value, exception_traceback = sys.exc_info()
-            traceback_string = traceback.format_exception(
-                exception_type,
-                exception_value,
-                exception_traceback
-            )
-            err_msg = json.dumps({
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string
-            })
-            logger.error(err_msg)
-            return
-
-        log_event_args = {
-            'logGroupName': LOGS_DESTINATION,
-            'logStreamName': LOG_STREAM,
-            'logEvents': [
-                {
-                    'timestamp': int(round(time.time() * 1000)),
-                    'message': json.dumps(logs_item)
-                }
-            ]
-        }
         if sequence_token:
             log_event_args.update({
                 'sequenceToken': sequence_token
@@ -293,19 +295,6 @@ def lambda_handler(event, context):
 
         try:
             logs.put_log_events(**log_event_args)
-        except logs.exceptions.InvalidSequenceTokenException:
-            exception_type, exception_value, exception_traceback = sys.exc_info()
-            traceback_string = traceback.format_exception(
-                exception_type,
-                exception_value,
-                exception_traceback
-            )
-            err_msg = json.dumps({
-                "errorType": exception_type.__name__,
-                "errorMessage": str(exception_value),
-                "stackTrace": traceback_string,
-                "payload": log_event_args
-
-            })
-            logger.error(err_msg)
-            return
+        except logs.exceptions.InvalidSequenceTokenException as exception:
+            log_event_args['sequenceToken'] = exception.response['expectedSequenceToken']
+            logs.put_log_events(**log_event_args)
