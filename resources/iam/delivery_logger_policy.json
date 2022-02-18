@@ -12,6 +12,7 @@
         {
             "Effect": "Allow",
             "Action": [
+                "logs:DescribeLogStreams",
                 "logs:PutLogEvents",
                 "logs:CreateLogStream"
             ],
