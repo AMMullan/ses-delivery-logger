@@ -52,15 +52,21 @@ def lambda_handler(event, context):
     event_type = message.get(type_key)
 
     ddb_item = OrderedDict()
+    logs_item = OrderedDict()
 
     ddb_item['MessageId'] = {'S': message.get('mail').get('messageId')}
     ddb_item["MessageTime"] = {'S': message_time}
     ddb_item["EventType"] = {'S': event_type}
 
+    logs_item['MessageId'] = message.get('mail').get('messageId')
+    logs_item["MessageTime"] = message_time
+    logs_item["EventType"] = event_type
+
     # Record the subject if the Headers are included
     eml_subject = message.get('mail', {}).get('commonHeaders', {}).get('subject')
     if eml_subject:
         ddb_item['Subject'] = {'S': eml_subject}
+        logs_item['Subject'] = eml_subject
 
     # Get unique destinations
     destination_address = list(set(message.get('mail').get('destination')))
@@ -68,13 +74,16 @@ def lambda_handler(event, context):
     config_set = message.get('mail').get('tags', {}).get('ses:configuration-set')
     if config_set:
         ddb_item['ConfigSet'] = {'S': next(iter(config_set or []), None)}
+        logs_item['ConfigSet'] = next(iter(config_set or []), None)
 
     iam_user = message.get('mail').get('tags', {}).get('ses:caller-identity')
     if iam_user:
         ddb_item['IAMUser'] = {'S': next(iter(iam_user or []), None)}
+        logs_item['IAMUser'] = next(iter(iam_user or []), None)
 
     from_address = message.get('mail').get('source')
     ddb_item['FromAddress'] = {'S': from_address}
+    logs_item['FromAddress'] = from_address
 
     if event_type == 'Bounce':
         bounce_detail = message.get('bounce')
@@ -86,6 +95,13 @@ def lambda_handler(event, context):
         ddb_item['BounceSubType'] = {'S': bounce_detail.get('bounceSubType')}
         ddb_item['MessageTime'] = {'S': bounce_detail.get('timestamp')}
 
+        logs_item['BounceSummary'] = json.dumps(bounce_detail.get('bouncedRecipients'))
+        logs_item['DestinationAddress'] = destination_address
+        logs_item['ReportingMTA'] = bounce_detail.get('reportingMTA', '')
+        logs_item['BounceType'] = bounce_detail.get('bounceType')
+        logs_item['BounceSubType'] = bounce_detail.get('bounceSubType')
+        logs_item['MessageTime'] = bounce_detail.get('timestamp')
+
     elif event_type == 'Complaint':
         complaint_detail = message.get('complaint')
 
@@ -95,6 +111,12 @@ def lambda_handler(event, context):
         ddb_item['FeedbackType'] = {'S': complaint_detail.get('complaintFeedbackType')}
         ddb_item['MessageTime'] = {'S': complaint_detail.get('arrivalDate')}
 
+        logs_item['ComplaintSummary'] = json.dumps(complaint_detail.get('complainedRecipients'))
+        logs_item['DestinationAddress'] = destination_address
+        logs_item['FeedbackId'] = complaint_detail.get('feedbackId')
+        logs_item['FeedbackType'] = complaint_detail.get('complaintFeedbackType')
+        logs_item['MessageTime'] = complaint_detail.get('arrivalDate')
+
     elif event_type == 'Delivery':
         delivery_detail = message.get('delivery')
 
@@ -102,6 +124,11 @@ def lambda_handler(event, context):
         ddb_item['ReportingMTA'] = {'S': delivery_detail.get('reportingMTA', '')}
         ddb_item['SMTPResponse'] = {'S': delivery_detail.get('smtpResponse')}
         ddb_item['MessageTime'] = {'S': delivery_detail.get('timestamp')}
+
+        logs_item['DestinationAddress'] = delivery_detail.get('recipients')
+        logs_item['ReportingMTA'] = delivery_detail.get('reportingMTA', '')
+        logs_item['SMTPResponse'] = delivery_detail.get('smtpResponse')
+        logs_item['MessageTime'] = delivery_detail.get('timestamp')
 
     elif event_type == 'DeliveryDelay':
         delay_detail = message.get('deliveryDelay')
@@ -111,9 +138,17 @@ def lambda_handler(event, context):
         ddb_item['DelayType'] = {'S': delay_detail.get('delayType')}
         ddb_item['MessageTime'] = {'S': delay_detail.get('timestamp')}
 
+        logs_item['DelayedRecipients'] = str(delay_detail.get('delayedRecipients'))
+        logs_item['ExpirationTime'] = delay_detail.get('expirationTime')
+        logs_item['DelayType'] = delay_detail.get('delayType')
+        logs_item['MessageTime'] = delay_detail.get('timestamp')
+
     elif event_type == 'Reject':
         ddb_item['DestinationAddress'] = {'SS': destination_address}
         ddb_item['Reason'] = {'S': message.get('reject').get('reason')}
+
+        logs_item['DestinationAddress'] = destination_address
+        logs_item['Reason'] = message.get('reject').get('reason')
 
     elif event_type == 'Click':
         click_detail = message.get('click')
@@ -125,6 +160,13 @@ def lambda_handler(event, context):
         ddb_item['UserAgent'] = {'S': click_detail.get('userAgent')}
         ddb_item['MessageTime'] = {'S': click_detail.get('timestamp')}
 
+        logs_item['DestinationAddress'] = destination_address
+        logs_item['IPAddress'] = click_detail.get('ipAddress')
+        logs_item['Link'] = click_detail.get('link')
+        logs_item['LinkTags'] = json.dumps(click_detail.get('linkTags'))
+        logs_item['UserAgent'] = click_detail.get('userAgent')
+        logs_item['MessageTime'] = click_detail.get('timestamp')
+
     elif event_type == 'Open':
         open_detail = message.get('open')
 
@@ -133,11 +175,19 @@ def lambda_handler(event, context):
         ddb_item['UserAgent'] = {'S': open_detail.get('userAgent')}
         ddb_item['MessageTime'] = {'S': open_detail.get('timestamp')}
 
+        logs_item['DestinationAddress'] = destination_address
+        logs_item['IPAddress'] = open_detail.get('ipAddress')
+        logs_item['UserAgent'] = open_detail.get('userAgent')
+        logs_item['MessageTime'] = open_detail.get('timestamp')
+
     elif event_type == 'Rendering Failure':
         failure_detail = message.get('failure')
 
         ddb_item['ErrorMessage'] = {'S': failure_detail.get('errorMessage')}
         ddb_item['TemplateName'] = {'S': failure_detail.get('templateName')}
+
+        logs_item['ErrorMessage'] = failure_detail.get('errorMessage')
+        logs_item['TemplateName'] = failure_detail.get('templateName')
 
     else:
         logger.critical(f'Unhandled Message Type: {event_type} - Message Content: {json.dumps(message)}')
@@ -232,7 +282,7 @@ def lambda_handler(event, context):
             'logEvents': [
                 {
                     'timestamp': int(round(time.time() * 1000)),
-                    'message': json.dumps(ddb_item)
+                    'message': json.dumps(logs_item)
                 }
             ]
         }
