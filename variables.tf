@@ -37,7 +37,7 @@ variable "event_retention_days" {
   description = "How many days to retain events stored in CloudWatch Logs"
 
   type    = number
-  default = 30
+  default = 90
 }
 
 variable "ddb_tbl_name" {
