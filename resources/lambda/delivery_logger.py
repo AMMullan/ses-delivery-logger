@@ -315,6 +315,7 @@ def lambda_handler(event, context):
                     "log_event_args": log_event_args
                 })
                 logger.error(err_msg)
+                return
 
         except Exception:
             exception_type, exception_value, exception_traceback = sys.exc_info()
