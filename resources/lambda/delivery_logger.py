@@ -231,7 +231,7 @@ def lambda_handler(event, context):
 
             try:
                 logs.put_log_events(**log_event_args)
-
+                return
             except logs.exceptions.InvalidSequenceTokenException as exception:
                 log_event_args['sequenceToken'] = exception.response['expectedSequenceToken']
 
