@@ -4,14 +4,6 @@
         {
             "Effect": "Allow",
             "Action": [
-                "dynamodb:PutItem",
-                "dynamodb:UpdateItem"
-            ],
-            "Resource": "arn:aws:dynamodb:${region}:${account_id}:table/${dynamodb_table}"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
                 "logs:DescribeLogStreams",
                 "logs:PutLogEvents",
                 "logs:CreateLogStream"
@@ -20,6 +12,11 @@
                 "arn:aws:logs:${region}:${account_id}:log-group:${cloudwatch_logs_group_name}:log-stream:*",
                 "arn:aws:logs:${region}:${account_id}:log-group:${cloudwatch_logs_destination}:log-stream:*"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "sqs:SendMessage",
+            "Resource": "${sqs_dlq_arn}"
         }
     ]
 }

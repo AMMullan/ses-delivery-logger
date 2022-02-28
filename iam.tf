@@ -13,7 +13,8 @@ resource "aws_iam_role" "delivery_logger" {
         region                      = data.aws_region.current.name,
         dynamodb_table              = var.ddb_tbl_name,
         cloudwatch_logs_group_name  = "/aws/lambda/${var.lambda_name}",
-        cloudwatch_logs_destination = var.cloudwatch_logs_destination
+        cloudwatch_logs_destination = var.cloudwatch_logs_destination,
+        sqs_dlq_arn                 = aws_sqs_queue.dlq.arn
       }
     )
   }

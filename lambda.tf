@@ -18,6 +18,10 @@ resource "aws_lambda_function" "delivery_logger" {
     }
   }
 
+  dead_letter_config {
+    target_arn = aws_sqs_queue.dlq.arn
+  }
+
   tags = var.resource_tags
 }
 
