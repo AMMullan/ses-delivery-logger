@@ -19,6 +19,20 @@ variable "lambda_name" {
   default = "SESDeliveryLogger"
 }
 
+variable "lambda_memory" {
+  description = "Lambda Memory Allocation"
+
+  type    = number
+  default = 192
+}
+
+variable "lambda_timeout" {
+  description = "Lambda Timeout"
+
+  type    = number
+  default = 10
+}
+
 variable "sns_topic_name" {
   description = "SNS Topic Name"
 

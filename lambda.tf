@@ -3,8 +3,8 @@ resource "aws_lambda_function" "delivery_logger" {
   role          = aws_iam_role.delivery_logger.arn
 
   runtime     = "python3.9"
-  memory_size = 192
-  timeout     = 5
+  memory_size = var.lambda_memory
+  timeout     = var.lambda_timeout
 
   filename         = "${path.module}/resources/lambda/delivery_logger.zip"
   source_code_hash = filebase64sha256("${path.module}/resources/lambda/delivery_logger.zip")
