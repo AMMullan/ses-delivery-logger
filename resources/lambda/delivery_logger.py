@@ -1,11 +1,11 @@
-import os
-import logging
-import json
-import time
 import datetime
-from collections import OrderedDict
+import json
+import logging
+import os
 import sys
+import time
 import traceback
+from collections import OrderedDict
 
 import boto3
 
@@ -15,8 +15,12 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 LOGS_DESTINATION = os.environ.get('LOGS_DESTINATION')
-DMY = datetime.datetime.today().strftime('%Y/%m/%d')
+DMY = datetime.datetime.now().strftime('%Y/%m/%d')
 MAX_PUT_ATTEMPTS = 3
+
+# Initialise the boto3 clients early in the Lambda warmup
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
+    logs = boto3.client('logs')
 
 # TODO:
 #   - Work out best way of NOT duplicating messages to DynamoDB if
@@ -28,129 +32,89 @@ MAX_PUT_ATTEMPTS = 3
 # You can simply request to increase these limits in Quotas until you iron out
 # the issue.
 
+def handle_bounce(message):
+    bounce_detail = message.get('bounce')
 
-def lambda_handler(event, context):
-    try:
-        message = json.loads(event['Records'][0]['Sns']['Message'])
-    except Exception:  # Not valid JSON, likely an SNS message.
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type,
-            exception_value,
-            exception_traceback
-        )
-        err_msg = json.dumps({
-            "errorType": exception_type.__name__,
-            "errorMessage": str(exception_value),
-            "stackTrace": traceback_string
-        })
-        logger.error(err_msg)
-        return
+    return {
+        'BounceSummary': json.dumps(bounce_detail.get('bouncedRecipients')),
+        'ReportingMTA': bounce_detail.get('reportingMTA', ''),
+        'BounceType': bounce_detail.get('bounceType'),
+        'BounceSubType': bounce_detail.get('bounceSubType'),
+        'MessageTime': bounce_detail.get('timestamp')
+    }
 
-    # Ignore any event that doesn't have valid mail items.
-    if 'mail' not in message:
-        return
 
-    message_time = event['Records'][0]['Sns']['Timestamp']
+def handle_complaint(message):
+    complaint_detail = message.get('complaint')
 
-    type_key = 'eventType' if 'eventType' in message.keys() else 'notificationType'
-    event_type = message.get(type_key)
+    return {
+        'ComplaintSummary': json.dumps(complaint_detail.get('complainedRecipients')),
+        'FeedbackId': complaint_detail.get('feedbackId'),
+        'FeedbackType': complaint_detail.get('complaintFeedbackType'),
+        'MessageTime': complaint_detail.get('arrivalDate')
+    }
 
-    logs_item = OrderedDict()
 
-    message_id = message.get('mail').get('messageId')
-    logs_item['MessageId'] = message_id
-    logs_item["MessageTime"] = message_time
-    logs_item["EventType"] = event_type
+def handle_delivery(message):
+    delivery_detail = message.get('delivery')
 
-    # Record the subject if the Headers are included
-    eml_subject = message.get('mail', {}).get('commonHeaders', {}).get('subject')
-    if eml_subject:
-        logs_item['Subject'] = eml_subject
+    return {
+        'DestinationAddress': delivery_detail.get('recipients'),
+        'ReportingMTA': delivery_detail.get('reportingMTA', ''),
+        'SMTPResponse': delivery_detail.get('smtpResponse'),
+        'MessageTime': delivery_detail.get('timestamp')
+    }
 
-    # Get unique destinations
-    destination_address = list(set(message.get('mail').get('destination')))
 
-    config_set = message.get('mail').get('tags', {}).get('ses:configuration-set')
-    if config_set:
-        logs_item['ConfigSet'] = next(iter(config_set or []), None)
+def handle_delivery_delay(message):
+    delay_detail = message.get('deliveryDelay')
 
-    iam_user = message.get('mail').get('tags', {}).get('ses:caller-identity')
-    if iam_user:
-        logs_item['IAMUser'] = next(iter(iam_user or []), None)
+    return {
+        'DelayedRecipients': str(delay_detail.get('delayedRecipients')),
+        'ExpirationTime': delay_detail.get('expirationTime'),
+        'DelayType': delay_detail.get('delayType'),
+        'MessageTime': delay_detail.get('timestamp')
+    }
 
-    from_address = message.get('mail').get('source')
-    logs_item['FromAddress'] = from_address
 
-    if event_type == 'Bounce':
-        bounce_detail = message.get('bounce')
+def handle_reject(message):
+    return {
+        'Reason': message.get('reject').get('reason')
+    }
 
-        logs_item['BounceSummary'] = json.dumps(bounce_detail.get('bouncedRecipients'))
-        logs_item['DestinationAddress'] = destination_address
-        logs_item['ReportingMTA'] = bounce_detail.get('reportingMTA', '')
-        logs_item['BounceType'] = bounce_detail.get('bounceType')
-        logs_item['BounceSubType'] = bounce_detail.get('bounceSubType')
-        logs_item['MessageTime'] = bounce_detail.get('timestamp')
 
-    elif event_type == 'Complaint':
-        complaint_detail = message.get('complaint')
+def handle_click(message):
+    click_detail = message.get('click')
 
-        logs_item['ComplaintSummary'] = json.dumps(complaint_detail.get('complainedRecipients'))
-        logs_item['DestinationAddress'] = destination_address
-        logs_item['FeedbackId'] = complaint_detail.get('feedbackId')
-        logs_item['FeedbackType'] = complaint_detail.get('complaintFeedbackType')
-        logs_item['MessageTime'] = complaint_detail.get('arrivalDate')
+    return {
+        'IPAddress': click_detail.get('ipAddress'),
+        'Link': click_detail.get('link'),
+        'LinkTags': json.dumps(click_detail.get('linkTags')),
+        'UserAgent': click_detail.get('userAgent'),
+        'MessageTime': click_detail.get('timestamp')
+    }
 
-    elif event_type == 'Delivery':
-        delivery_detail = message.get('delivery')
 
-        logs_item['DestinationAddress'] = delivery_detail.get('recipients')
-        logs_item['ReportingMTA'] = delivery_detail.get('reportingMTA', '')
-        logs_item['SMTPResponse'] = delivery_detail.get('smtpResponse')
-        logs_item['MessageTime'] = delivery_detail.get('timestamp')
+def handle_open(message):
+    open_detail = message.get('open')
 
-    elif event_type == 'DeliveryDelay':
-        delay_detail = message.get('deliveryDelay')
+    return {
+        'IPAddress': open_detail.get('ipAddress'),
+        'UserAgent': open_detail.get('userAgent'),
+        'MessageTime': open_detail.get('timestamp')
+    }
 
-        logs_item['DelayedRecipients'] = str(delay_detail.get('delayedRecipients'))
-        logs_item['ExpirationTime'] = delay_detail.get('expirationTime')
-        logs_item['DelayType'] = delay_detail.get('delayType')
-        logs_item['MessageTime'] = delay_detail.get('timestamp')
 
-    elif event_type == 'Reject':
-        logs_item['DestinationAddress'] = destination_address
-        logs_item['Reason'] = message.get('reject').get('reason')
+def handle_rendering_failure(message):
+    failure_detail = message.get('failure')
 
-    elif event_type == 'Click':
-        click_detail = message.get('click')
+    return {
+        'ErrorMessage': failure_detail.get('errorMessage'),
+        'TemplateName': failure_detail.get('templateName')
+    }
 
-        logs_item['DestinationAddress'] = destination_address
-        logs_item['IPAddress'] = click_detail.get('ipAddress')
-        logs_item['Link'] = click_detail.get('link')
-        logs_item['LinkTags'] = json.dumps(click_detail.get('linkTags'))
-        logs_item['UserAgent'] = click_detail.get('userAgent')
-        logs_item['MessageTime'] = click_detail.get('timestamp')
 
-    elif event_type == 'Open':
-        open_detail = message.get('open')
-
-        logs_item['DestinationAddress'] = destination_address
-        logs_item['IPAddress'] = open_detail.get('ipAddress')
-        logs_item['UserAgent'] = open_detail.get('userAgent')
-        logs_item['MessageTime'] = open_detail.get('timestamp')
-
-    elif event_type == 'Rendering Failure':
-        failure_detail = message.get('failure')
-
-        logs_item['ErrorMessage'] = failure_detail.get('errorMessage')
-        logs_item['TemplateName'] = failure_detail.get('templateName')
-
-    else:
-        logger.critical(f'Unhandled Message Type: {event_type} - Message Content: {json.dumps(message)}')
-        return
-
-    logs = boto3.client('logs')
-
+def publish_to_cloudwatch(message_id, log_detail):
     # Using this log stream name to hopefully fix sequence issues
     log_stream_name = f'{DMY}/{message_id}'
 
@@ -161,8 +125,7 @@ def lambda_handler(event, context):
             logStreamName=log_stream_name
         )
     except logs.exceptions.ResourceAlreadyExistsException:
-        # Doesn't matter if stream exists
-        pass
+        pass  # Doesn't matter if stream exists
     except Exception:
         exception_type, exception_value, exception_traceback = sys.exc_info()
         traceback_string = traceback.format_exception(
@@ -185,87 +148,103 @@ def lambda_handler(event, context):
         'logEvents': [
             {
                 'timestamp': int(round(time.time() * 1000)),
-                'message': json.dumps(logs_item)
+                'message': json.dumps(log_detail)
             }
         ]
     }
 
-    # Get Upload Sequence Token
+    count = 0
+    while count < MAX_PUT_ATTEMPTS:
+        count += 1
+
+        try:
+            logs.put_log_events(**log_event_args)
+
+        except Exception:
+            exception_type, exception_value, exception_traceback = sys.exc_info()
+            traceback_string = traceback.format_exception(
+                exception_type,
+                exception_value,
+                exception_traceback
+            )
+            err_msg = json.dumps({
+                "errorType": exception_type.__name__,
+                "errorMessage": str(exception_value),
+                "stackTrace": traceback_string,
+                "log_event_args": log_event_args
+            })
+            logger.error(err_msg)
+            return
+
+        else:
+            return
+
+
+def lambda_handler(event, context):
     try:
-        streams = logs.describe_log_streams(
-            logGroupName=LOGS_DESTINATION,
-            logStreamNamePrefix=log_stream_name
-        ).get('logStreams')
-    except Exception:
-        exception_type, exception_value, exception_traceback = sys.exc_info()
-        traceback_string = traceback.format_exception(
-            exception_type,
-            exception_value,
-            exception_traceback
-        )
-        err_msg = json.dumps({
-            "errorType": exception_type.__name__,
-            "errorMessage": str(exception_value),
-            "stackTrace": traceback_string
-        })
-        logger.warning(err_msg)
+        event_message = event['Records'][0]['Sns']['Message']
+    except (KeyError, IndexError):
         return
     else:
-        sequence_token = next(
-            iter(
-                [
-                    sequence.get('uploadSequenceToken')
-                    for sequence in streams
-                ] or []
-            ), None
-        )
+        message = json.loads(event_message)
 
-        if sequence_token:
-            log_event_args.update({
-                'sequenceToken': sequence_token
-            })
+    mail_properties = message.get('mail', {})
+    mail_tags = mail_properties.get('tags', {})
 
-        count = 0
-        while count < MAX_PUT_ATTEMPTS:
-            count += 1
+    # Ignore any event that doesn't have valid mail items.
+    if not mail_properties:
+        return
 
-            try:
-                logs.put_log_events(**log_event_args)
+    message_time = event['Records'][0]['Sns']['Timestamp']
 
-            except logs.exceptions.InvalidSequenceTokenException as exception:
-                log_event_args['sequenceToken'] = exception.response['expectedSequenceToken']
+    type_key = (
+        'eventType'
+        if 'eventType' in message.keys()
+        else 'notificationType'
+    )
+    event_type = message.get(type_key)
 
-                if count == MAX_PUT_ATTEMPTS:
-                    exception_type, exception_value, exception_traceback = sys.exc_info()
-                    traceback_string = traceback.format_exception(
-                        exception_type,
-                        exception_value,
-                        exception_traceback
-                    )
-                    err_msg = json.dumps({
-                        "errorType": exception_type.__name__,
-                        "errorMessage": str(exception_value),
-                        "stackTrace": traceback_string,
-                        "log_event_args": log_event_args
-                    })
-                    logger.error(err_msg)
-                    return
+    log_detail = OrderedDict()
 
-            except Exception:
-                exception_type, exception_value, exception_traceback = sys.exc_info()
-                traceback_string = traceback.format_exception(
-                    exception_type,
-                    exception_value,
-                    exception_traceback
-                )
-                err_msg = json.dumps({
-                    "errorType": exception_type.__name__,
-                    "errorMessage": str(exception_value),
-                    "stackTrace": traceback_string,
-                    "log_event_args": log_event_args
-                })
-                logger.error(err_msg)
-                return
+    message_id = mail_properties['messageId']
+    log_detail['MessageId'] = message_id
+    log_detail["MessageTime"] = message_time
+    log_detail["EventType"] = event_type
+    log_detail['FromAddress'] = mail_properties.get('source')
+    log_detail['Subject'] = mail_properties.get('commonHeaders', {}).get('subject')
 
-            else:
-                return
+    # Get unique destinations
+    log_detail['DestinationAddress'] = list(set(mail_properties.get('destination')))
+
+    if source_ip := mail_tags.get('ses:source-ip'):
+        log_detail['SourceIp'] = next(iter(source_ip or []), None)
+    elif source_ip := mail_properties.get('sourceIp'):
+        log_detail['SourceIp'] = source_ip
+
+    if config_set := mail_tags.get('ses:configuration-set'):
+        log_detail['ConfigSet'] = next(iter(config_set or []), None)
+    else:
+        log_detail['ConfigSet'] = None
+
+    if iam_user := mail_tags.get('ses:caller-identity'):
+        log_detail['IAMUser'] = next(iter(iam_user or []), None)
+    elif iam_user := mail_properties.get('callerIdentity'):
+        log_detail['IAMUser'] = iam_user
+
+    event_actions = {
+        'Bounce': lambda: handle_bounce(message),
+        'Complaint': lambda: handle_complaint(message),
+        'Delivery': lambda: handle_delivery(message),
+        'DeliveryDelay': lambda: handle_delivery_delay(message),
+        'Reject': lambda: handle_reject(message),
+        'Click': lambda: handle_click(message),
+        'Open': lambda: handle_open(message),
+        'Rendering Failure': lambda: handle_rendering_failure(message)
+    }
+    if event_type in event_actions:
+        log_detail.update(event_actions[event_type]())
+    else:
+        logger.critical(f'Unhandled Message Type: {event_type}')
+        return
+
+    publish_to_cloudwatch(message_id, log_detail)
