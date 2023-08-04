@@ -30,7 +30,6 @@ module "ses_logger" {
 ## Resources
 * aws_iam_role.delivery_logger
 * aws_cloudwatch_log_group.delivery_logger_lambda
-* aws_dynamodb_table.delivery_logger
 * aws_lambda_function.delivery_logger
 * aws_lambda_permission.with_sns
 * aws_sns_topic.delivery_logger
@@ -44,15 +43,7 @@ module "ses_logger" {
 | iam\_role\_prefix | Lambda IAM Execution Role Prefix - Will have region name appended to it | `string` | SESDeliveryLogger | no |
 | lambda\_name | Lambda Function Name | `string` | SESDeliveryLogger | no |
 | sns\_topic\_name | SNS Topic Name | `string` | SESDeliveryLogger | no |
-| ddb\_tbl\_name | DynamoDB Table Name | `string` | SESDeliveryLogger | no |
-| ddb\_enable\_ttl | Enable TTL on DDB Table | `bool` | true | no |
-| ddb\_ttl\_days | Days To Retain DDB Records | `number` | 30 | no |
-| ddb\_encrypted | Enable DynamoDB Table Encryption | `bool` | true | no |
-| ddb\_billing\_mode | Capacity Billing - PAY_PER_REQUEST or PROVISIONED | `string` | PAY_PER_REQUEST | no |
-| ddb\_provisioned\_read | DynamoDB Provisioned Read Capacity Units | `number` | 0 | no |
-| ddb\_provisioned\_write | DynamoDB Provisioned Write Capacity Units | `number` | 0 | no |
 | logs\_retention | CloudWatch Logs Retention (Days) | `number` | 180 | no |
-| point\_in\_time\_recovery\_enabled | Enable Point-In-Time Recovery for DynamoDB | `bool` | false | no |
 
 > If **ddb_billing_mode** is configured with PROVISIONED, then **ddb_provisioned_read** and **ddb_provisioned_write** must be greater than 0 or you will logically get an error.
 
@@ -61,7 +52,6 @@ module "ses_logger" {
 | Name | Description |
 |------|-------------|
 | sns\_topic\_arn | SNS Topic ARN |
-| dynamodb\_table\_arn | SNS Topic ARN |
 
 ## Notes
 You can also use default tags to tag all resources in your Terraform project, i.e.
@@ -77,9 +67,6 @@ provider "aws" {
    }
 }
 ```
-DynamoDB:
- * Table is encrypted at rest by default using the AWS Managed KMS Key.
- * The Table will **NOT** be destroyed if the module is removed so you will need to ensure that this table is removed manually should you wish.
 
 ## License
 
