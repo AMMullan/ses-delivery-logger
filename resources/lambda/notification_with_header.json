@@ -1,0 +1,22 @@
+{
+    "Records": [
+        {
+            "EventSource": "aws:sns",
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger:6949462d-423b-4ff7-a4cd-ce5f859c0cfc",
+            "Sns": {
+                "Type": "Notification",
+                "MessageId": "b1549944-f481-5922-bf3b-c403e5266347",
+                "TopicArn": "arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger",
+                "Subject": null,
+                "Message": "{\"notificationType\":\"Delivery\",\"mail\":{\"timestamp\":\"2023-08-04T14:47:01.017Z\",\"source\":\"allan.mullan@informa.com\",\"sourceArn\":\"arn:aws:ses:us-east-1:584554046133:identity/allan.mullan@informa.com\",\"sourceIp\":\"82.4.197.39\",\"callerIdentity\":\"ses-smtp-allan-test\",\"sendingAccountId\":\"584554046133\",\"messageId\":\"01000189c1042299-07adbad9-914b-473c-8352-02e56f8d6ede-000000\",\"destination\":[\"allan.mullan@informa.com\"],\"headersTruncated\":false,\"headers\":[{\"name\":\"Received\",\"value\":\"from jellybaby (cpc149474-cmbg20-2-0-cust294.5-4.cable.virginm.net [82.4.197.39]) by email-smtp.amazonaws.com with SMTP (SimpleEmailService-d-9FK6E26W0) id WOqTapzd9Gc3JyPWtvvx for allan.mullan@informa.com; Fri, 04 Aug 2023 14:46:59 +0000 (UTC)\"},{\"name\":\"Received\",\"value\":\"by jellybaby (sSMTP sendmail emulation); Fri, 04 Aug 2023 15:46:58 +0100\"},{\"name\":\"Date\",\"value\":\"Fri, 04 Aug 2023 15:46:58 +0100\"},{\"name\":\"From\",\"value\":\"allan.mullan@informa.com\"},{\"name\":\"Subject\",\"value\":\"This is the Subject Line\"}],\"commonHeaders\":{\"from\":[\"allan.mullan@informa.com\"],\"date\":\"Fri, 04 Aug 2023 15:46:58 +0100\",\"subject\":\"This is the Subject Line\"}},\"delivery\":{\"timestamp\":\"2023-08-04T14:47:03.881Z\",\"processingTimeMillis\":2864,\"recipients\":[\"allan.mullan@informa.com\"],\"smtpResponse\":\"250 SmtpThread-3039473-1691160423663@us-mta-486.us.mimecast.lan Received OK [LxSSacgZNWKkQt9k3VXA3w.us486]\",\"remoteMtaIp\":\"205.139.110.141\",\"reportingMTA\":\"a8-25.smtp-out.amazonses.com\"}}",
+                "Timestamp": "2023-08-04T14:47:03.973Z",
+                "SignatureVersion": "1",
+                "Signature": "O0eAvSj0MAM5gJG1SRYHsuY6Xnuv7ffcbrV7BbDfxq+7snMsT5mguhb1OoPfjnwSGJQtx+wN7RMa4XWmkRlej2JHYsgve+yUMkyGeNAsTFS+/zV0mSujDCWS6fgnMGJtUmgckhwKV03yZl2RAi4SGWBizxlqSzzo/D5tk/7me1xamXDr4pDimcQnwOAXrxW/7022WlkiiClrPZ3zDCp7eR3BgcSlt4NpxJ4fAIqzi718lr7r8JhU0GW97i6DTrZwHzBhX8IwFRHiNPRM6ztyllvo5rKvbMMb9C8/kHoCqGTANhts62fa/qjNBTL0Rmg/STLd7341IdbmE+EN2+zgNg==",
+                "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-01d088a6f77103d0fe307c0069e40ed6.pem",
+                "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger:6949462d-423b-4ff7-a4cd-ce5f859c0cfc",
+                "MessageAttributes": {}
+            }
+        }
+    ]
+}

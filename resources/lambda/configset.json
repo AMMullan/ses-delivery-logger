@@ -1,0 +1,22 @@
+{
+    "Records": [
+        {
+            "EventSource": "aws:sns",
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger:6949462d-423b-4ff7-a4cd-ce5f859c0cfc",
+            "Sns": {
+                "Type": "Notification",
+                "MessageId": "8dbea62e-bc4b-5dd6-957a-fb69bb9a1db2",
+                "TopicArn": "arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger",
+                "Subject": "Amazon SES Email Event Notification",
+                "Message": "{\"eventType\":\"Delivery\",\"mail\":{\"timestamp\":\"2023-08-04T14:05:04.486Z\",\"source\":\"allan.mullan@informa.com\",\"sourceArn\":\"arn:aws:ses:us-east-1:584554046133:identity/allan.mullan@informa.com\",\"sendingAccountId\":\"584554046133\",\"messageId\":\"01000189c0ddbc66-e52aa98f-8dce-4558-bde4-703700353457-000000\",\"destination\":[\"allan.mullan@informa.com\"],\"headersTruncated\":false,\"headers\":[{\"name\":\"Received\",\"value\":\"from jellybaby (cpc149474-cmbg20-2-0-cust294.5-4.cable.virginm.net [82.4.197.39]) by email-smtp.amazonaws.com with SMTP (SimpleEmailService-d-3L4RGMEX0) id 6OpExEpbsFC49u1bWilr for allan.mullan@informa.com; Fri, 04 Aug 2023 14:05:03 +0000 (UTC)\"},{\"name\":\"Received\",\"value\":\"by jellybaby (sSMTP sendmail emulation); Fri, 04 Aug 2023 15:05:01 +0100\"},{\"name\":\"Date\",\"value\":\"Fri, 04 Aug 2023 15:05:01 +0100\"},{\"name\":\"From\",\"value\":\"allan.mullan@informa.com\"},{\"name\":\"Subject\",\"value\":\"This is the Subject Line\"}],\"commonHeaders\":{\"from\":[\"allan.mullan@informa.com\"],\"date\":\"Fri, 04 Aug 2023 15:05:01 +0100\",\"messageId\":\"01000189c0ddbc66-e52aa98f-8dce-4558-bde4-703700353457-000000\",\"subject\":\"This is the Subject Line\"},\"tags\":{\"ses:operation\":[\"SendSmtpEmail\"],\"ses:configuration-set\":[\"default\"],\"ses:source-ip\":[\"82.4.197.39\"],\"ses:from-domain\":[\"informa.com\"],\"ses:caller-identity\":[\"ses-smtp-allan-test\"],\"ses:outgoing-ip\":[\"54.240.8.86\"]}},\"delivery\":{\"timestamp\":\"2023-08-04T14:05:05.789Z\",\"processingTimeMillis\":1303,\"recipients\":[\"allan.mullan@informa.com\"],\"smtpResponse\":\"250 SmtpThread-5486695-1691157905769@us-mta-433.us.mimecast.lan Received OK [M4TIxkhRNg-lNcXUJfBeBw.us433]\",\"reportingMTA\":\"a8-86.smtp-out.amazonses.com\"}}\n",
+                "Timestamp": "2023-08-04T14:05:05.989Z",
+                "SignatureVersion": "1",
+                "Signature": "MUazTKChsfckFI1JcmfeQVSZy7JIffa/1g9alqxYijcGOVGDVl7SyabR3Y3kpB0X1Fcy6BkwOzr8XfqaPk3Yttccls5gE+wZiKDLuiIZCeuZGAZBzhEaZ783baVbGw6YmxqSw28CNPZvKYcVYcAcO6ZAt6F/GbZMUvpl/r+gYdjoPxtEctmSsyWhYF78M48Wh20S7djhGpCGTXWUSm0VsTB761cfbgm+qfYKKg7mdJZ9cfCQHfpvnXngQxdwmvXKwj5QsNtGolqNpD3Jqp2KDvKJyesPR1XO4uX6R5/DBdAmHyWathuemYdpdZb8Q2HuGcKSW2d8yCgQabwI4xMaSQ==",
+                "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-01d088a6f77103d0fe307c0069e40ed6.pem",
+                "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger:6949462d-423b-4ff7-a4cd-ce5f859c0cfc",
+                "MessageAttributes": {}
+            }
+        }
+    ]
+}

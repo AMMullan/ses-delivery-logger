@@ -1,0 +1,22 @@
+{
+    "Records": [
+        {
+            "EventSource": "aws:sns",
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger:6949462d-423b-4ff7-a4cd-ce5f859c0cfc",
+            "Sns": {
+                "Type": "Notification",
+                "MessageId": "df104b65-e756-551c-9e7d-1622e9deb905",
+                "TopicArn": "arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger",
+                "Subject": null,
+                "Message": "{\"notificationType\":\"Delivery\",\"mail\":{\"timestamp\":\"2023-08-04T14:33:42.988Z\",\"source\":\"allan.mullan@informa.com\",\"sourceArn\":\"arn:aws:ses:us-east-1:584554046133:identity/allan.mullan@informa.com\",\"sourceIp\":\"82.4.197.39\",\"callerIdentity\":\"ses-smtp-allan-test\",\"sendingAccountId\":\"584554046133\",\"messageId\":\"01000189c0f7f54c-79496ed9-d7ff-4602-9b57-fc07d6904301-000000\",\"destination\":[\"allan.mullan@informa.com\"]},\"delivery\":{\"timestamp\":\"2023-08-04T14:33:44.537Z\",\"processingTimeMillis\":1549,\"recipients\":[\"allan.mullan@informa.com\"],\"smtpResponse\":\"250 SmtpThread-2434780-1691159624508@us-mta-44.us.mimecast.lan Received OK [cMjwvx8HPaKkwH_9BVvdlA.us44]\",\"remoteMtaIp\":\"205.139.110.242\",\"reportingMTA\":\"a8-25.smtp-out.amazonses.com\"}}",
+                "Timestamp": "2023-08-04T14:33:44.583Z",
+                "SignatureVersion": "1",
+                "Signature": "WiIs2BULWieEl1yQwyNcPtUhDkIFzQTxeZRVtv8snmhOCcX6u2MO1oi/GW8C13GH2h4uJyoC0cSe17OcqKDqlr41R7TKL5hueQBM7pMA7tCZGEiSm/d5WxY2tcGryHVy7CcdbESKpEpMJGxcws5owlHh+ehoyCaFqCfvzbKGft8CbsEKLSesyn9qO+nqH+gJV5n3M8XnPiqeD8LGmc0UqlygCV2wMPtxbnNCT8pmGILA6u2BClL3+EJkSYoIiRuuo6dtrA8O762rwbzA08GhfJLr+YZlJmo2Bmvk5nd9aduppzsPGt3jMvlROUAppXE1CJL3KjJGkevkqNobkbKTKA==",
+                "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-01d088a6f77103d0fe307c0069e40ed6.pem",
+                "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:584554046133:SESDeliveryLogger:6949462d-423b-4ff7-a4cd-ce5f859c0cfc",
+                "MessageAttributes": {}
+            }
+        }
+    ]
+}
